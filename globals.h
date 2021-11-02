@@ -11,5 +11,4 @@
 
 #define ALLOW_RETURNS true
 
-
 using namespace omnetpp;
