@@ -9,6 +9,7 @@
 #include<chrono>
 #include <jsoncpp/json/value.h>
 
-#define ALLOW_LOOPS false
+#define ALLOW_RETURNS true
+
 
 using namespace omnetpp;
