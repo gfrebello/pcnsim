@@ -22,11 +22,7 @@ class FullNode : public cSimpleModule {
 // Define module and initialize random number generator
 Define_Module(FullNode);
 std::random_device rd;
-//std::mt19937 gen(rd()); // seed the generator
-unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-std::default_random_engine gen(seed);
-
-
+std::mt19937 gen(rd()); // seed the generator
 
 // Util functions
 void FullNode::printPaymentChannels() {
@@ -93,7 +89,7 @@ Transaction* FullNode::generateMessage() {
     if (dest == src) dest++;
     double value = 1;
     char msgname[20];
-    sprintf(msgname, "tic-%d-to-%d", src, dest);
+    sprintf(msgname, "%d-to-%d;value:%0.1f", src, dest,value);
 
     // Create message object and set source and destination field.
     Transaction *msg = new Transaction(msgname);
@@ -135,10 +131,20 @@ void FullNode::forwardMessage(Transaction *msg) {
     std::uniform_int_distribution<> distr(0, n-1); // define the range
     int k = distr(gen);
     int nextNode = gate("out",k)->getPathEndGate()->getOwnerModule()->getIndex();
-    while ((nextNode == getIndex())||(nextNode==prevNode)) {
-        k = distr(gen);
-        nextNode = gate("out",k)->getPathEndGate()->getOwnerModule()->getIndex();
+
+    // Allow or deny returns to the last hop
+    if(ALLOW_RETURNS == false) {
+        while ((nextNode == getIndex())||(nextNode==prevNode)) { // Prevent returns and self-messages
+            k = distr(gen);
+            nextNode = gate("out",k)->getPathEndGate()->getOwnerModule()->getIndex();
+        }
+    } else {
+        while (nextNode == getIndex()) { // Prevent only self-messages
+            k = distr(gen);
+            nextNode = gate("out",k)->getPathEndGate()->getOwnerModule()->getIndex();
+        }
     }
+
     msg->setHopCount(msg->getHopCount()+1);
     send(msg, "out", k);
 
@@ -150,8 +156,7 @@ void FullNode::forwardMessage(Transaction *msg) {
 }
 
 
-void FullNode::refreshDisplay() const
-{
+void FullNode::refreshDisplay() const {
     char pcText[100];
     sprintf(pcText, "{ ");
     for(auto& i : _paymentChannels) {
