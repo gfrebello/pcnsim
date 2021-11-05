@@ -6,4 +6,3 @@
 #define HTLC_REQ 5
 #define HTLC_ACK 6
 #define HTLC_RELEASE 7
-

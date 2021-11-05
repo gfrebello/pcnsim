@@ -6,6 +6,7 @@ class PaymentChannel {
         double _capacity;
         double _balance;
         double _quality;
+        double _cost;
         cGate *_gate;
 
         // Constructors for polymorphism

@@ -26,6 +26,7 @@ std::mt19937 gen(rd()); // seed the generator
 
 // Util functions
 void FullNode::printPaymentChannels() {
+
     EV << "Printing payment channels of node " << getIndex() << ":\n { ";
     for (auto& it : _paymentChannels) {
         EV << "{ '" << it.first << "': " << it.second.toJson().toStyledString();
@@ -34,6 +35,7 @@ void FullNode::printPaymentChannels() {
 }
 
 Json::Value FullNode::paymentChannelstoJson() {
+
     Json::Value json;
     std::map<int, PaymentChannel>::const_iterator it = _paymentChannels.begin(), end = _paymentChannels.end();
     for ( ; it != end; it++) {
@@ -101,17 +103,6 @@ Transaction* FullNode::generateMessage() {
 void FullNode::handleMessage(cMessage *msg) {
 
     Transaction *ttmsg = check_and_cast<Transaction *>(msg);
-
-    // Increase channel capacity and emit signal after receiving payment
-    int prevNode = ttmsg->getSenderModule()->getIndex();
-    if (prevNode != this->getIndex()) { // Prevent self messages from interfering in PCs
-        _paymentChannels[prevNode].increaseCapacity(ttmsg->getValue());
-        std::string signalName = "node" + std::to_string(getIndex()) + "-to-node" + std::to_string(prevNode) + ":balance";
-        std::map<std::string, int> signals = _signals;
-        std::map<std::string, int>::iterator it = _signals.find(signalName);
-        emit(_signals[signalName],_paymentChannels[prevNode]._capacity);
-    }
-
     if (ttmsg->getDestination() == getIndex()){
         EV << "Message reached destinaton at node " << getIndex() << " after " << ttmsg->getHopCount() << " hops. Finishing...\n";
         delete msg;
@@ -124,10 +115,10 @@ void FullNode::handleMessage(cMessage *msg) {
 void FullNode::forwardMessage(Transaction *msg) {
 
     // Forward message to random gate
-    int prevNode = msg->getSenderModule()->getIndex();
     int n = gateSize("out");
     std::uniform_int_distribution<> distr(0, n-1); // define the range
     int k = distr(gen);
+    int prevNode = msg->getSenderModule()->getIndex();
     int nextNode = gate("out",k)->getPathEndGate()->getOwnerModule()->getIndex();
 
     // Allow or deny returns to the last hop
@@ -143,18 +134,24 @@ void FullNode::forwardMessage(Transaction *msg) {
         }
     }
 
+    // Update channel capacities and emit signals
+    if (prevNode != this->getIndex()) { // Prevent self messages from interfering in channel capacities
+        _paymentChannels[prevNode].increaseCapacity(msg->getValue());
+        std::string signalName = "node" + std::to_string(getIndex()) + "-to-node" + std::to_string(prevNode) + ":balance";
+        emit(_signals[signalName], _paymentChannels[nextNode]._capacity);
+        _paymentChannels[nextNode].decreaseCapacity(msg->getValue());
+        signalName = "node" + std::to_string(getIndex()) + "-to-node" + std::to_string(nextNode) + ":balance";
+        emit(_signals[signalName],_paymentChannels[prevNode]._capacity);
+    }
+
+    // Forward payment
     msg->setHopCount(msg->getHopCount()+1);
     send(msg, "out", k);
-
-    // Decrease channel capacity and emit signal after forwarding payment
-    _paymentChannels[nextNode].decreaseCapacity(msg->getValue());
-    char signalName[32];
-    sprintf(signalName, "node%d-to-node%d:balance", getIndex(), nextNode);
-    emit(_signals[signalName], _paymentChannels[nextNode]._capacity);
 }
 
 
 void FullNode::refreshDisplay() const {
+
     char pcText[100];
     sprintf(pcText, "{ ");
     for(auto& i : _paymentChannels) {

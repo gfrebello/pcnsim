@@ -1,4 +1,6 @@
+cplusplus{{
 #include "messageTypes.h"
+}};
 
 packet RouteReq {
     int src;
