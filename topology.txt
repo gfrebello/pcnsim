@@ -1,0 +1,8 @@
+# [srcNode] [dstNode] [srcCapacity] [dstCapacity] [delay (ms)] 
+0 1 10 10 100
+0 2 10 10 100
+1 2 10 10 100
+1 4 10 10 100
+3 4 10 10 100
+4 5 10 10 100
+

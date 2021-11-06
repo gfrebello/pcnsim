@@ -34,7 +34,7 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cpp, .msg and .sm files
-OBJS = $O/FullNode.o $O/routeReply_m.o $O/routeReq_m.o $O/transaction_m.o
+OBJS = $O/FullNode.o $O/netBuilder.o $O/routeReply_m.o $O/routeReq_m.o $O/transaction_m.o
 
 # Message files
 MSGFILES = \

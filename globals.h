@@ -2,6 +2,7 @@
 #include <string.h>
 #include <omnetpp.h>
 #include <iostream>
+#include <fstream>
 #include <random>
 #include <string>
 #include <unordered_map>
@@ -12,3 +13,5 @@
 #define ALLOW_RETURNS true
 
 using namespace omnetpp;
+
+extern cTopology *globalTopology;
