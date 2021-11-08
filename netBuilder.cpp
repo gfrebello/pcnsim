@@ -1,14 +1,18 @@
 #include "globals.h"
+//#include "PaymentChannel.h"
 
 cTopology *globalTopology = new cTopology("globalTopology");
+std::map< std::string, std::vector< std::tuple<std::string, double, simtime_t> > > pendingTransactions;
+std::map< std::string, std::map<std::string, std::tuple<double, double, double, cGate*> > > globalPaymentChannels;
 
 class NetBuilder : public cSimpleModule {
     public:
         virtual void initialize() override;
         virtual void handleMessage(cMessage *msg) override;
         void buildNetwork(cModule *parent);
+        void initWorkload();
         void connect(cGate *src, cGate *dst, double delay);
-        bool doesNodeExist(std::map<long, cModule*> nodeList, long nodeId);
+        bool nodeExists(std::map<int, cModule*> nodeList, int nodeId);
 };
 
 Define_Module(NetBuilder);
@@ -35,25 +39,65 @@ void NetBuilder::connect(cGate *src, cGate *dst, double delay) {
     src->connectTo(dst, channel);
 }
 
-bool NetBuilder::doesNodeExist(std::map<long, cModule*> nodeList, long nodeId) {
-    std::map<long, cModule*>::iterator it = nodeList.find(nodeId);
+bool NetBuilder::nodeExists(std::map<int, cModule*> nodeList, int nodeId) {
+    std::map<int, cModule*>::iterator it = nodeList.find(nodeId);
     if (it != nodeList.end())
         return true;
     else
         return false;
 }
 
+void NetBuilder::initWorkload() {
+    std::map<int, cMessage*> paymentList;
+    std::string line;
+    std::ifstream workloadFile(par("workloadFile").stringValue(), std::ifstream::in);
+
+    EV << "Initializing workload from file: " << par("topologyFile").stringValue() << "\n";
+
+    while (getline(workloadFile, line, '\n')) {
+
+        // Skip headers and empty lines
+        if (line.empty() || line[0] == '#')
+            continue;
+
+        // Check whether all fields are present
+        std::vector<std::string> tokens = cStringTokenizer(line.c_str()).asVector();
+        if (tokens.size() != 4)
+            throw cRuntimeError("wrong line in topology file: 4 items required, line: \"%s\"", line.c_str());
+
+        // Get fields from tokens
+        int srcId = atoi(tokens[0].c_str());
+        int dstId = atoi(tokens[1].c_str());
+        double value = atof(tokens[2].c_str());
+        simtime_t time = atoi(tokens[3].c_str());
+
+        // Print found edges
+        EV << "PAYMENT FOUND: (" << srcId << ", " << dstId << "); Value = " << value << ". Processing...\n";
+
+        std::string srcName = "node" + std::to_string(srcId);
+        std::string dstName = "node" + std::to_string(dstId);
+        auto transactionTuple = std::make_tuple(dstName, value, time);
+        pendingTransactions[srcName].push_back(transactionTuple);
+    }
+
+}
+
+
 void NetBuilder::buildNetwork(cModule *parent) {
 
-    std::map<long, cModule *> nodeIdToMod;
+    // Initialize workload
+    initWorkload();
+
+    // Initialize variables and build network
+    std::map<int, cModule *> nodeIdToMod;
     std::string line;
     std::string modClassName = "FullNode";
     std::ifstream topologyFile(par("topologyFile").stringValue(), std::ifstream::in);
-
     cModule *srcMod;
     cModule *dstMod;
     cTopology::Node *srcNode;
     cTopology::Node *dstNode;
+    std::vector<std::tuple<cTopology::Link*, cGate*, cGate*>> linksBuffer;
 
     EV << "Building network from file: " << par("topologyFile").stringValue() << "\n";
 
@@ -69,8 +113,8 @@ void NetBuilder::buildNetwork(cModule *parent) {
             throw cRuntimeError("wrong line in topology file: 5 items required, line: \"%s\"", line.c_str());
 
         // Get fields from tokens
-        long srcId = atol(tokens[0].c_str());
-        long dstId = atol(tokens[1].c_str());
+        int srcId = atoi(tokens[0].c_str());
+        int dstId = atoi(tokens[1].c_str());
         double srcCapacity = atof(tokens[2].c_str());
         double dstCapacity = atof(tokens[3].c_str());
         double delay = atof(tokens[4].c_str());
@@ -79,18 +123,18 @@ void NetBuilder::buildNetwork(cModule *parent) {
         EV << "EDGE FOUND: (" << srcId << ", " << dstId << "); Delay = " << delay << "ms. Processing...\n";
 
         // Define module names
-        std::string srcNodeName = "node" + std::to_string(srcId);
-        std::string dstNodeName = "node" + std::to_string(dstId);
+        std::string srcName = "node" + std::to_string(srcId);
+        std::string dstName = "node" + std::to_string(dstId);
 
         // Check if the source module exists and if not, create a new source module
-        if(!doesNodeExist(nodeIdToMod,srcId)) {
+        if(!nodeExists(nodeIdToMod,srcId)) {
             cModuleType *srcModType = cModuleType::find(modClassName.c_str());
             if (!srcModType)
                 throw cRuntimeError("Source module class `%s' not found", modClassName.c_str());
-            srcMod = srcModType->create(srcNodeName.c_str(), parent);
+            srcMod = srcModType->create(srcName.c_str(), parent);
             nodeIdToMod[srcId] = srcMod;
             srcMod->finalizeParameters();
-            srcNode = new cTopology::Node(srcId);
+            srcNode = new cTopology::Node(srcMod->getId());
             globalTopology->addNode(srcNode);
         } else {
             srcMod = nodeIdToMod.find(srcId)->second;
@@ -98,43 +142,65 @@ void NetBuilder::buildNetwork(cModule *parent) {
         }
 
         // Check if the destination module exists and if not, create a new destination module
-        if(!doesNodeExist(nodeIdToMod,dstId)) {
+        if(!nodeExists(nodeIdToMod,dstId)) {
             cModuleType *dstModType = cModuleType::find(modClassName.c_str());
             if (!dstModType)
                 throw cRuntimeError("Destination module class `%s' not found", modClassName.c_str());
-            dstMod = dstModType->create(dstNodeName.c_str(), parent);
+            dstMod = dstModType->create(dstName.c_str(), parent);
             nodeIdToMod[dstId] = dstMod;
             dstMod->finalizeParameters();
-            dstNode = new cTopology::Node(dstId);
+            dstNode = new cTopology::Node(dstMod->getId());
             globalTopology->addNode(dstNode);
         } else {
             dstMod = nodeIdToMod.find(dstId)->second;
-            dstNode = globalTopology->getNode(dstId);
+            dstNode = globalTopology->getNodeFor(dstMod);
         }
 
         // Connect modules
         cGate *srcIn, *srcOut, *dstIn, *dstOut;
         srcIn = srcMod->getOrCreateFirstUnconnectedGate("in", 0, false, true);
-        srcOut= srcMod->getOrCreateFirstUnconnectedGate("out", 0, false, true);
+        srcOut = srcMod->getOrCreateFirstUnconnectedGate("out", 0, false, true);
         dstIn = dstMod->getOrCreateFirstUnconnectedGate("in", 0, false, true);
         dstOut = dstMod->getOrCreateFirstUnconnectedGate("out", 0, false, true);
         connect(srcOut, dstIn, delay);
         connect(dstOut, srcIn, delay);
 
-        // Add bidirectional link to the global topology
+        // Add bidirectional link to links buffer (we use a buffer because
+        // we can`t safely add links before all modules are built)
         cTopology::Link *srcToDstLink = new cTopology::Link(srcCapacity);
         cTopology::Link *dstToSrcLink = new cTopology::Link(dstCapacity);
-        globalTopology->addLink(srcToDstLink, srcNode, dstNode);
-        globalTopology->addLink(dstToSrcLink, dstNode, srcNode);
+        auto linkTupleSrcToDst = std::make_tuple(srcToDstLink, srcOut, dstIn);
+        auto linkTupleDstToSrc = std::make_tuple(dstToSrcLink, dstOut, srcIn);
+        linksBuffer.push_back(linkTupleSrcToDst);
+        linksBuffer.push_back(linkTupleDstToSrc);
+
+        //Initialize payment channels
+        double cost = 0;
+        double quality = 1;
+        auto pcSrcToDst = std::make_tuple(srcCapacity, cost, quality, dstIn);
+        auto pcDstToSrc = std::make_tuple(dstCapacity, cost, quality, srcIn);
+        //PaymentChannel pcSrcToDst = PaymentChannel(srcCapacity, cost, quality, dstIn);
+        //PaymentChannel pcDstToSrc = PaymentChannel(dstCapacity, cost, quality, srcIn);
+        globalPaymentChannels[srcName][dstName] = pcSrcToDst;
+        globalPaymentChannels[dstName][srcName] = pcDstToSrc;
     }
 
-    // Initialize all modules
-    std::map<long, cModule*>::iterator it;
+    // Build modules
+    std::map<int, cModule*>::iterator it;
     for (it = nodeIdToMod.begin(); it != nodeIdToMod.end(); it++) {
         cModule *mod = it->second;
         mod->buildInside();
     }
 
+    // Add links to global topology
+    for(const auto& linkTuple: linksBuffer) {
+        cTopology::Link *link = std::get<0>(linkTuple);
+        cGate *srcGate = std::get<1>(linkTuple);
+        cGate *dstGate = std::get<2>(linkTuple);
+        globalTopology->addLink(link, srcGate, dstGate);
+    }
+
+    // Initialize modules
     bool more = true;
     for (int stage = 0; more; stage++) {
         more = false;
@@ -144,4 +210,5 @@ void NetBuilder::buildNetwork(cModule *parent) {
                 more = true;
         }
     }
+
 }

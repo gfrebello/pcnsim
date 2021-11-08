@@ -7,11 +7,11 @@
 #include <string>
 #include <unordered_map>
 #include <map>
-#include<chrono>
+#include <chrono>
 #include <jsoncpp/json/value.h>
-
-#define ALLOW_RETURNS true
 
 using namespace omnetpp;
 
 extern cTopology *globalTopology;
+extern std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t>>> pendingTransactions;
+extern std::map< std::string, std::map<std::string, std::tuple <double, double, double, cGate*> > > globalPaymentChannels;

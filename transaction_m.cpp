@@ -179,15 +179,13 @@ inline std::ostream& operator<<(std::ostream& out, const std::vector<T,A>& vec)
 
 Register_Class(Transaction)
 
-Transaction::Transaction(const char *name, short kind) : ::omnetpp::cMessage(name,kind)
+Transaction::Transaction(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
-    this->source = 0;
-    this->destination = 0;
     this->hopCount = 0;
     this->value = 0;
 }
 
-Transaction::Transaction(const Transaction& other) : ::omnetpp::cMessage(other)
+Transaction::Transaction(const Transaction& other) : ::omnetpp::cPacket(other)
 {
     copy(other);
 }
@@ -199,7 +197,7 @@ Transaction::~Transaction()
 Transaction& Transaction::operator=(const Transaction& other)
 {
     if (this==&other) return *this;
-    ::omnetpp::cMessage::operator=(other);
+    ::omnetpp::cPacket::operator=(other);
     copy(other);
     return *this;
 }
@@ -214,7 +212,7 @@ void Transaction::copy(const Transaction& other)
 
 void Transaction::parsimPack(omnetpp::cCommBuffer *b) const
 {
-    ::omnetpp::cMessage::parsimPack(b);
+    ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->source);
     doParsimPacking(b,this->destination);
     doParsimPacking(b,this->hopCount);
@@ -223,29 +221,29 @@ void Transaction::parsimPack(omnetpp::cCommBuffer *b) const
 
 void Transaction::parsimUnpack(omnetpp::cCommBuffer *b)
 {
-    ::omnetpp::cMessage::parsimUnpack(b);
+    ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->source);
     doParsimUnpacking(b,this->destination);
     doParsimUnpacking(b,this->hopCount);
     doParsimUnpacking(b,this->value);
 }
 
-int Transaction::getSource() const
+const char * Transaction::getSource() const
 {
-    return this->source;
+    return this->source.c_str();
 }
 
-void Transaction::setSource(int source)
+void Transaction::setSource(const char * source)
 {
     this->source = source;
 }
 
-int Transaction::getDestination() const
+const char * Transaction::getDestination() const
 {
-    return this->destination;
+    return this->destination.c_str();
 }
 
-void Transaction::setDestination(int destination)
+void Transaction::setDestination(const char * destination)
 {
     this->destination = destination;
 }
@@ -300,7 +298,7 @@ class TransactionDescriptor : public omnetpp::cClassDescriptor
 
 Register_ClassDescriptor(TransactionDescriptor)
 
-TransactionDescriptor::TransactionDescriptor() : omnetpp::cClassDescriptor("Transaction", "omnetpp::cMessage")
+TransactionDescriptor::TransactionDescriptor() : omnetpp::cClassDescriptor("Transaction", "omnetpp::cPacket")
 {
     propertynames = nullptr;
 }
@@ -392,8 +390,8 @@ const char *TransactionDescriptor::getFieldTypeString(int field) const
         field -= basedesc->getFieldCount();
     }
     static const char *fieldTypeStrings[] = {
-        "int",
-        "int",
+        "string",
+        "string",
         "int",
         "double",
     };
@@ -464,8 +462,8 @@ std::string TransactionDescriptor::getFieldValueAsString(void *object, int field
     }
     Transaction *pp = (Transaction *)object; (void)pp;
     switch (field) {
-        case 0: return long2string(pp->getSource());
-        case 1: return long2string(pp->getDestination());
+        case 0: return oppstring2string(pp->getSource());
+        case 1: return oppstring2string(pp->getDestination());
         case 2: return long2string(pp->getHopCount());
         case 3: return double2string(pp->getValue());
         default: return "";
@@ -482,8 +480,8 @@ bool TransactionDescriptor::setFieldValueAsString(void *object, int field, int i
     }
     Transaction *pp = (Transaction *)object; (void)pp;
     switch (field) {
-        case 0: pp->setSource(string2long(value)); return true;
-        case 1: pp->setDestination(string2long(value)); return true;
+        case 0: pp->setSource((value)); return true;
+        case 1: pp->setDestination((value)); return true;
         case 2: pp->setHopCount(string2long(value)); return true;
         case 3: pp->setValue(string2double(value)); return true;
         default: return false;

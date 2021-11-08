@@ -18,23 +18,27 @@
 
 
 
+// cplusplus {{
+#include "globals.h"
+// }}
+
 /**
- * Class generated from <tt>transaction.msg:2</tt> by nedtool.
+ * Class generated from <tt>transaction.msg:5</tt> by nedtool.
  * <pre>
- * message Transaction
+ * packet Transaction
  * {
- *     int source;
- *     int destination;
+ *     string source;
+ *     string destination;
  *     int hopCount = 0;
  *     double value;
  * }
  * </pre>
  */
-class Transaction : public ::omnetpp::cMessage
+class Transaction : public ::omnetpp::cPacket
 {
   protected:
-    int source;
-    int destination;
+    ::omnetpp::opp_string source;
+    ::omnetpp::opp_string destination;
     int hopCount;
     double value;
 
@@ -55,10 +59,10 @@ class Transaction : public ::omnetpp::cMessage
     virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
 
     // field getter/setter methods
-    virtual int getSource() const;
-    virtual void setSource(int source);
-    virtual int getDestination() const;
-    virtual void setDestination(int destination);
+    virtual const char * getSource() const;
+    virtual void setSource(const char * source);
+    virtual const char * getDestination() const;
+    virtual void setDestination(const char * destination);
     virtual int getHopCount() const;
     virtual void setHopCount(int hopCount);
     virtual double getValue() const;

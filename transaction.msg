@@ -1,7 +1,10 @@
-message Transaction
-{
-    int source;
-    int destination;
+cplusplus{{
+#include "globals.h"
+}};
+
+packet Transaction {
+    string source;
+    string destination;
     int hopCount = 0;
     double value;
 }
