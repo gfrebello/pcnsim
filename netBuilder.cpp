@@ -108,8 +108,8 @@ void NetBuilder::buildNetwork(cModule *parent) {
 
         // Check whether all fields are present
         std::vector<std::string> tokens = cStringTokenizer(line.c_str()).asVector();
-        if (tokens.size() != 9)
-            throw cRuntimeError("wrong line in topology file: 9 items required, line: \"%s\"", line.c_str());
+        if (tokens.size() != 15)
+            throw cRuntimeError("wrong line in topology file: 15 items required, line: \"%s\"", line.c_str());
 
         // Get fields from tokens
         int srcId = atoi(tokens[0].c_str());
@@ -120,7 +120,13 @@ void NetBuilder::buildNetwork(cModule *parent) {
         double dstFee = atof(tokens[5].c_str());
         double linkQualitySrcToDst = atof(tokens[6].c_str());
         double linkQualityDstToSrc = atof(tokens[7].c_str());
-        double linkDelay = atof(tokens[8].c_str());
+        int srcMaxAcceptedHTLCs = atoi(tokens[8].c_str());
+        int dstMaxAcceptedHTLCs = atoi(tokens[9].c_str());
+        double srcHTLCMinimumMsat = atof(tokens[10].c_str());
+        double dstHTLCMinimumMsat = atof(tokens[11].c_str());
+        double srcChannelReserveSatoshis = atof(tokens[12].c_str());
+        double dstChannelReserveSatoshis = atof(tokens[13].c_str());
+        double linkDelay = atof(tokens[14].c_str());
 
         // Print found edges
         EV << "EDGE FOUND: (" << srcId << ", " << dstId << "); linkDelay = " << linkDelay << "ms. Processing...\n";
@@ -182,8 +188,8 @@ void NetBuilder::buildNetwork(cModule *parent) {
         linksBuffer.push_back(linkTupleDstToSrc);
 
         //Initialize payment channels
-        auto pcSrcToDst = std::make_tuple(srcCapacity, srcFee, linkQualitySrcToDst, dstIn);
-        auto pcDstToSrc = std::make_tuple(dstCapacity, dstFee, linkQualityDstToSrc, srcIn);
+        auto pcSrcToDst = std::make_tuple(srcCapacity, srcFee, linkQualitySrcToDst, srcMaxAcceptedHTLCs, srcHTLCMinimumMsat, srcChannelReserveSatoshis, dstIn);
+        auto pcDstToSrc = std::make_tuple(dstCapacity, dstFee, linkQualityDstToSrc, dstMaxAcceptedHTLCs, dstHTLCMinimumMsat, dstChannelReserveSatoshis, srcIn);
         globalPaymentChannels[srcName][dstName] = pcSrcToDst;
         globalPaymentChannels[dstName][srcName] = pcDstToSrc;
     }

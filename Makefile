@@ -35,18 +35,29 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cpp, .msg and .sm files
 OBJS = \
+    $O/crypto.o \
     $O/FullNode.o \
     $O/netBuilder.o \
     $O/PaymentChannel.o \
+    $O/baseMessage_m.o \
+    $O/failHTLC_m.o \
+    $O/invoice_m.o \
     $O/routeReply_m.o \
     $O/routeReq_m.o \
-    $O/transaction_m.o
+    $O/transaction_m.o \
+    $O/updateAddHTLC_m.o \
+    $O/updateFulfillHTLC_m.o
 
 # Message files
 MSGFILES = \
+    baseMessage.msg \
+    failHTLC.msg \
+    invoice.msg \
     routeReply.msg \
     routeReq.msg \
-    transaction.msg
+    transaction.msg \
+    updateAddHTLC.msg \
+    updateFulfillHTLC.msg
 
 # SM files
 SMFILES =
