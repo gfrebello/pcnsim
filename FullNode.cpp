@@ -6,18 +6,17 @@ class FullNode : public cSimpleModule {
 
     protected:
         virtual void initialize() override;
-        //virtual Transaction *generateMessage();
         virtual void handleMessage(cMessage *msg) override;
         virtual void forwardMessage(Transaction *msg);
         virtual void refreshDisplay() const;
 
     public:
-        std::map<std::string, PaymentChannel> _paymentChannels;
-        std::map<std::string, int> _signals;
-        cTopology *_localTopology;
         typedef std::map<std::string, int> RoutingTable;  // nodeName -> gateindex
         RoutingTable rtable;
+        std::map<std::string, PaymentChannel> _paymentChannels;
+        std::map<std::string, int> _signals;
         bool _isFirstSelfMessage;
+        cTopology *_localTopology;
 
         Json::Value paymentChannelstoJson();
         void printPaymentChannels();
@@ -27,10 +26,7 @@ class FullNode : public cSimpleModule {
 // Define module and initialize random number generator
 Define_Module(FullNode);
 
-//std::random_device rd;
-//std::mt19937 gen(rd()); // seed the generator
 std::string myName;
-
 
 // Util functions
 void FullNode::printPaymentChannels() {
@@ -62,42 +58,30 @@ void FullNode::initialize() {
     myName = getName();
     std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t>>> localPendingTransactions = pendingTransactions;
 
-    // Create payment channels and register them as signals/statistics
-//    for (int i=0; i < gateSize("out"); i++) {
-
     // Initialize payment channels
     for (auto& neighborToPC : globalPaymentChannels[myName]) {
         std::string neighborName = neighborToPC.first;
         std::tuple<double, double, double, cGate*> pcTuple = neighborToPC.second;
         double capacity = std::get<0>(pcTuple);
-        double cost = std::get<1>(pcTuple);
+        double fee = std::get<1>(pcTuple);
         double quality = std::get<2>(pcTuple);
         cGate* neighborGate = std::get<3>(pcTuple);
-        PaymentChannel pc = PaymentChannel(capacity, cost, quality, neighborGate);
-        //cGate *neighborGate = neighborToPC->second;
-        //std::string neighborName = neighborGate->getOwnerModule()->getName();
-        //cGate *neighborGate = gate("out", i)->getPathEndGate();
-        //std::string neighborName = neighborGate->getOwnerModule()->getName();
+        PaymentChannel pc = PaymentChannel(capacity, fee, quality, neighborGate);
         _paymentChannels[neighborName] = pc;
 
         // Register signals and statistics
-        std::string signalName = myName +"-to-" + neighborName + ":balance";
+        std::string signalName = myName +"-to-" + neighborName + ":capacity";
         simsignal_t signal = registerSignal(signalName.c_str());
         _signals[signalName] = signal;
         emit(_signals[signalName], _paymentChannels[neighborName]._capacity);
 
-        char statisticName[64];
-        sprintf(statisticName, "%s-to-%s:balance", myName.c_str(), neighborName.c_str());
-        cProperty *statisticTemplate = getProperties()->get("statisticTemplate", "pcBalances");
-        getEnvir()->addResultRecorders(this, signal, statisticName, statisticTemplate);
+        std::string statisticName = myName +"-to-" + neighborName + ":capacity";
+        cProperty *statisticTemplate = getProperties()->get("statisticTemplate", "pcCapacities");
+        getEnvir()->addResultRecorders(this, signal, statisticName.c_str(), statisticTemplate);
     }
 
 
-    //}
-
     // Build routing table
-//    int thisId = this->getId();
-//    int thisNodeId = getId();
     cTopology::Node *thisNode = _localTopology->getNodeFor(this);
     for (int i = 0; i < _localTopology->getNumNodes(); i++) {
         if (_localTopology->getNode(i) == thisNode)
@@ -162,19 +146,22 @@ bool FullNode::updatePaymentChannel (std::string nodeName, double value, bool in
 
 void FullNode::forwardMessage(Transaction *msg) {
 
-
     std::string dstName = msg->getDestination();
     std::string prevName = msg->getSenderModule()->getName();
     myName = getName();
 
-    // Check if I'm the destination
+    // Check if this node is the destination
     if (dstName == myName){
         EV << "Message reached destinaton at " << myName.c_str() << " after "
                 << msg->getHopCount() << " hops. Finishing...\n";
         updatePaymentChannel(prevName, msg->getValue(), true);
-        //_paymentChannels[prevName].increaseCapacity(msg->getValue());
-        std::string signalName = myName + "-to-" + prevName + ":balance";
+        std::string signalName = myName + "-to-" + prevName + ":capacity";
         emit(_signals[signalName], _paymentChannels[prevName]._capacity);
+        if (hasGUI()) {
+            char text[64];
+            sprintf(text, "Payment reached destination!");
+            bubble(text);
+        }
         delete msg;
         return;
     }
@@ -193,13 +180,11 @@ void FullNode::forwardMessage(Transaction *msg) {
     if (prevName != myName) { // Prevent self messages from interfering in channel capacities
         EV << "forwarding packet " << msg->getName() << " on gate index " << outGateIndex << endl;
         updatePaymentChannel(prevName, msg->getValue(), true);
-        //_paymentChannels[prevName].increaseCapacity(msg->getValue());
-        std::string signalName = myName + "-to-" + prevName + ":balance";
+        std::string signalName = myName + "-to-" + prevName + ":capacity";
         emit(_signals[signalName], _paymentChannels[prevName]._capacity);
 
         if(updatePaymentChannel(nextName, msg->getValue(), false)) {
-            //_paymentChannels[nextName].decreaseCapacity(msg->getValue());
-            signalName = myName + "-to-" + nextName + ":balance";
+            signalName = myName + "-to-" + nextName + ":capacity";
             emit(_signals[signalName],_paymentChannels[nextName]._capacity);
             msg->setHopCount(msg->getHopCount()+1);
             send(msg, "out", outGateIndex);
@@ -211,8 +196,7 @@ void FullNode::forwardMessage(Transaction *msg) {
     } else if(_isFirstSelfMessage == true) {
 
         if(updatePaymentChannel(nextName, msg->getValue(), false)) {
-            //_paymentChannels[nextName].decreaseCapacity(msg->getValue());
-             std::string signalName = myName + "-to-" + nextName + ":balance";
+             std::string signalName = myName + "-to-" + nextName + ":capacity";
              emit(_signals[signalName],_paymentChannels[nextName]._capacity);
              _isFirstSelfMessage = false;
              msg->setHopCount(msg->getHopCount()+1);
@@ -238,6 +222,5 @@ void FullNode::refreshDisplay() const {
         sprintf(buf, "%s: %0.1f,\n ", neighborName.c_str(), capacity);
         strcat(pcText,buf);
     }
-    //strcat(pcText,"");
     getDisplayString().setTagArg("t", 0, pcText);
 }

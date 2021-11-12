@@ -1,5 +1,6 @@
-# [srcNode] [dstNode] [value] [time]
+# [srcNode] [dstNode] [value] [time (ms)]
 0 4 0.1 0
 2 5 0.5 500
+5 2 0.5 500
 0 3 0.1 1000
 5 0 3 1500

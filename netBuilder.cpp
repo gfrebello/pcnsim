@@ -1,5 +1,4 @@
 #include "globals.h"
-//#include "PaymentChannel.h"
 
 cTopology *globalTopology = new cTopology("globalTopology");
 std::map< std::string, std::vector< std::tuple<std::string, double, simtime_t> > > pendingTransactions;
@@ -11,7 +10,7 @@ class NetBuilder : public cSimpleModule {
         virtual void handleMessage(cMessage *msg) override;
         void buildNetwork(cModule *parent);
         void initWorkload();
-        void connect(cGate *src, cGate *dst, double delay);
+        void connect(cGate *src, cGate *dst, double linkDelay);
         bool nodeExists(std::map<int, cModule*> nodeList, int nodeId);
 };
 
@@ -32,10 +31,10 @@ void NetBuilder::handleMessage(cMessage *msg) {
     buildNetwork(getParentModule());
 }
 
-void NetBuilder::connect(cGate *src, cGate *dst, double delay) {
+void NetBuilder::connect(cGate *src, cGate *dst, double linkDelay) {
 
     cDelayChannel *channel = cDelayChannel::create("channel");
-    channel->setDelay(delay);
+    channel->setDelay(linkDelay);
     src->connectTo(dst, channel);
 }
 
@@ -109,18 +108,22 @@ void NetBuilder::buildNetwork(cModule *parent) {
 
         // Check whether all fields are present
         std::vector<std::string> tokens = cStringTokenizer(line.c_str()).asVector();
-        if (tokens.size() != 5)
-            throw cRuntimeError("wrong line in topology file: 5 items required, line: \"%s\"", line.c_str());
+        if (tokens.size() != 9)
+            throw cRuntimeError("wrong line in topology file: 9 items required, line: \"%s\"", line.c_str());
 
         // Get fields from tokens
         int srcId = atoi(tokens[0].c_str());
         int dstId = atoi(tokens[1].c_str());
         double srcCapacity = atof(tokens[2].c_str());
         double dstCapacity = atof(tokens[3].c_str());
-        double delay = atof(tokens[4].c_str());
+        double srcFee = atof(tokens[4].c_str());
+        double dstFee = atof(tokens[5].c_str());
+        double linkQualitySrcToDst = atof(tokens[6].c_str());
+        double linkQualityDstToSrc = atof(tokens[7].c_str());
+        double linkDelay = atof(tokens[8].c_str());
 
         // Print found edges
-        EV << "EDGE FOUND: (" << srcId << ", " << dstId << "); Delay = " << delay << "ms. Processing...\n";
+        EV << "EDGE FOUND: (" << srcId << ", " << dstId << "); linkDelay = " << linkDelay << "ms. Processing...\n";
 
         // Define module names
         std::string srcName = "node" + std::to_string(srcId);
@@ -138,7 +141,7 @@ void NetBuilder::buildNetwork(cModule *parent) {
             globalTopology->addNode(srcNode);
         } else {
             srcMod = nodeIdToMod.find(srcId)->second;
-            srcNode = globalTopology->getNode(srcId);
+            srcNode = globalTopology->getNodeFor(srcMod);
         }
 
         // Check if the destination module exists and if not, create a new destination module
@@ -162,25 +165,25 @@ void NetBuilder::buildNetwork(cModule *parent) {
         srcOut = srcMod->getOrCreateFirstUnconnectedGate("out", 0, false, true);
         dstIn = dstMod->getOrCreateFirstUnconnectedGate("in", 0, false, true);
         dstOut = dstMod->getOrCreateFirstUnconnectedGate("out", 0, false, true);
-        connect(srcOut, dstIn, delay);
-        connect(dstOut, srcIn, delay);
+        connect(srcOut, dstIn, linkDelay);
+        connect(dstOut, srcIn, linkDelay);
+
+        // Define link weights
+        double srcToDstWeight = srcCapacity;
+        double dstToSrcWeight = dstCapacity;
 
         // Add bidirectional link to links buffer (we use a buffer because
         // we can`t safely add links before all modules are built)
-        cTopology::Link *srcToDstLink = new cTopology::Link(srcCapacity);
-        cTopology::Link *dstToSrcLink = new cTopology::Link(dstCapacity);
+        cTopology::Link *srcToDstLink = new cTopology::Link(srcToDstWeight);
+        cTopology::Link *dstToSrcLink = new cTopology::Link(dstToSrcWeight);
         auto linkTupleSrcToDst = std::make_tuple(srcToDstLink, srcOut, dstIn);
         auto linkTupleDstToSrc = std::make_tuple(dstToSrcLink, dstOut, srcIn);
         linksBuffer.push_back(linkTupleSrcToDst);
         linksBuffer.push_back(linkTupleDstToSrc);
 
         //Initialize payment channels
-        double cost = 0;
-        double quality = 1;
-        auto pcSrcToDst = std::make_tuple(srcCapacity, cost, quality, dstIn);
-        auto pcDstToSrc = std::make_tuple(dstCapacity, cost, quality, srcIn);
-        //PaymentChannel pcSrcToDst = PaymentChannel(srcCapacity, cost, quality, dstIn);
-        //PaymentChannel pcDstToSrc = PaymentChannel(dstCapacity, cost, quality, srcIn);
+        auto pcSrcToDst = std::make_tuple(srcCapacity, srcFee, linkQualitySrcToDst, dstIn);
+        auto pcDstToSrc = std::make_tuple(dstCapacity, dstFee, linkQualityDstToSrc, srcIn);
         globalPaymentChannels[srcName][dstName] = pcSrcToDst;
         globalPaymentChannels[dstName][srcName] = pcDstToSrc;
     }
