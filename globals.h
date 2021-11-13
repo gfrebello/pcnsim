@@ -16,4 +16,4 @@ using namespace omnetpp;
 
 extern cTopology *globalTopology;
 extern std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t>>> pendingTransactions;
-extern std::map< std::string, std::map<std::string, std::tuple <double, double, double, cGate*> > > globalPaymentChannels;
+extern std::map< std::string, std::map<std::string, std::tuple <double, double, double, int, double, double, cGate*> > > globalPaymentChannels;

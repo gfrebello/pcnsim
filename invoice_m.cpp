@@ -181,7 +181,6 @@ Register_Class(Invoice)
 
 Invoice::Invoice(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
-    this->source = 0;
     this->amount = 0;
 }
 
@@ -225,12 +224,12 @@ void Invoice::parsimUnpack(omnetpp::cCommBuffer *b)
     doParsimUnpacking(b,this->paymentHash);
 }
 
-int Invoice::getSource() const
+const char * Invoice::getSource() const
 {
-    return this->source;
+    return this->source.c_str();
 }
 
-void Invoice::setSource(int source)
+void Invoice::setSource(const char * source)
 {
     this->source = source;
 }
@@ -374,7 +373,7 @@ const char *InvoiceDescriptor::getFieldTypeString(int field) const
         field -= basedesc->getFieldCount();
     }
     static const char *fieldTypeStrings[] = {
-        "int",
+        "string",
         "double",
         "string",
     };
@@ -445,7 +444,7 @@ std::string InvoiceDescriptor::getFieldValueAsString(void *object, int field, in
     }
     Invoice *pp = (Invoice *)object; (void)pp;
     switch (field) {
-        case 0: return long2string(pp->getSource());
+        case 0: return oppstring2string(pp->getSource());
         case 1: return double2string(pp->getAmount());
         case 2: return oppstring2string(pp->getPaymentHash());
         default: return "";
@@ -462,7 +461,7 @@ bool InvoiceDescriptor::setFieldValueAsString(void *object, int field, int i, co
     }
     Invoice *pp = (Invoice *)object; (void)pp;
     switch (field) {
-        case 0: pp->setSource(string2long(value)); return true;
+        case 0: pp->setSource((value)); return true;
         case 1: pp->setAmount(string2double(value)); return true;
         case 2: pp->setPaymentHash((value)); return true;
         default: return false;

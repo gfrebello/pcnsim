@@ -3,7 +3,7 @@ cplusplus {{
 }};
 
 packet Invoice{
-    int source;
+    string source;
     double amount;
     string paymentHash;
 }

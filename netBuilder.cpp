@@ -2,7 +2,7 @@
 
 cTopology *globalTopology = new cTopology("globalTopology");
 std::map< std::string, std::vector< std::tuple<std::string, double, simtime_t> > > pendingTransactions;
-std::map< std::string, std::map<std::string, std::tuple<double, double, double, cGate*> > > globalPaymentChannels;
+std::map< std::string, std::map<std::string, std::tuple<double, double, double, int, double, double, cGate*> > > globalPaymentChannels;
 
 class NetBuilder : public cSimpleModule {
     public:

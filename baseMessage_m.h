@@ -27,7 +27,7 @@
  * <pre>
  * packet BaseMessage
  * {
- *     int destination;
+ *     string destination;
  *     int messageType;
  *     //int hops[20];
  *     int hopCount;
@@ -37,7 +37,7 @@
 class BaseMessage : public ::omnetpp::cPacket
 {
   protected:
-    int destination;
+    ::omnetpp::opp_string destination;
     int messageType;
     int hopCount;
 
@@ -58,8 +58,8 @@ class BaseMessage : public ::omnetpp::cPacket
     virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
 
     // field getter/setter methods
-    virtual int getDestination() const;
-    virtual void setDestination(int destination);
+    virtual const char * getDestination() const;
+    virtual void setDestination(const char * destination);
     virtual int getMessageType() const;
     virtual void setMessageType(int messageType);
     virtual int getHopCount() const;

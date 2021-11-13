@@ -177,24 +177,23 @@ inline std::ostream& operator<<(std::ostream& out, const std::vector<T,A>& vec)
     return out;
 }
 
-Register_Class(update_add_htlc)
+Register_Class(UpdateAddHTLC)
 
-update_add_htlc::update_add_htlc(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
+UpdateAddHTLC::UpdateAddHTLC(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
-    this->source = 0;
     this->amount = 0;
 }
 
-update_add_htlc::update_add_htlc(const update_add_htlc& other) : ::omnetpp::cPacket(other)
+UpdateAddHTLC::UpdateAddHTLC(const UpdateAddHTLC& other) : ::omnetpp::cPacket(other)
 {
     copy(other);
 }
 
-update_add_htlc::~update_add_htlc()
+UpdateAddHTLC::~UpdateAddHTLC()
 {
 }
 
-update_add_htlc& update_add_htlc::operator=(const update_add_htlc& other)
+UpdateAddHTLC& UpdateAddHTLC::operator=(const UpdateAddHTLC& other)
 {
     if (this==&other) return *this;
     ::omnetpp::cPacket::operator=(other);
@@ -202,14 +201,14 @@ update_add_htlc& update_add_htlc::operator=(const update_add_htlc& other)
     return *this;
 }
 
-void update_add_htlc::copy(const update_add_htlc& other)
+void UpdateAddHTLC::copy(const UpdateAddHTLC& other)
 {
     this->source = other.source;
     this->paymentHash = other.paymentHash;
     this->amount = other.amount;
 }
 
-void update_add_htlc::parsimPack(omnetpp::cCommBuffer *b) const
+void UpdateAddHTLC::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->source);
@@ -217,7 +216,7 @@ void update_add_htlc::parsimPack(omnetpp::cCommBuffer *b) const
     doParsimPacking(b,this->amount);
 }
 
-void update_add_htlc::parsimUnpack(omnetpp::cCommBuffer *b)
+void UpdateAddHTLC::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->source);
@@ -225,43 +224,43 @@ void update_add_htlc::parsimUnpack(omnetpp::cCommBuffer *b)
     doParsimUnpacking(b,this->amount);
 }
 
-int update_add_htlc::getSource() const
+const char * UpdateAddHTLC::getSource() const
 {
-    return this->source;
+    return this->source.c_str();
 }
 
-void update_add_htlc::setSource(int source)
+void UpdateAddHTLC::setSource(const char * source)
 {
     this->source = source;
 }
 
-const char * update_add_htlc::getPaymentHash() const
+const char * UpdateAddHTLC::getPaymentHash() const
 {
     return this->paymentHash.c_str();
 }
 
-void update_add_htlc::setPaymentHash(const char * paymentHash)
+void UpdateAddHTLC::setPaymentHash(const char * paymentHash)
 {
     this->paymentHash = paymentHash;
 }
 
-double update_add_htlc::getAmount() const
+double UpdateAddHTLC::getAmount() const
 {
     return this->amount;
 }
 
-void update_add_htlc::setAmount(double amount)
+void UpdateAddHTLC::setAmount(double amount)
 {
     this->amount = amount;
 }
 
-class update_add_htlcDescriptor : public omnetpp::cClassDescriptor
+class UpdateAddHTLCDescriptor : public omnetpp::cClassDescriptor
 {
   private:
     mutable const char **propertynames;
   public:
-    update_add_htlcDescriptor();
-    virtual ~update_add_htlcDescriptor();
+    UpdateAddHTLCDescriptor();
+    virtual ~UpdateAddHTLCDescriptor();
 
     virtual bool doesSupport(omnetpp::cObject *obj) const override;
     virtual const char **getPropertyNames() const override;
@@ -283,24 +282,24 @@ class update_add_htlcDescriptor : public omnetpp::cClassDescriptor
     virtual void *getFieldStructValuePointer(void *object, int field, int i) const override;
 };
 
-Register_ClassDescriptor(update_add_htlcDescriptor)
+Register_ClassDescriptor(UpdateAddHTLCDescriptor)
 
-update_add_htlcDescriptor::update_add_htlcDescriptor() : omnetpp::cClassDescriptor("update_add_htlc", "omnetpp::cPacket")
+UpdateAddHTLCDescriptor::UpdateAddHTLCDescriptor() : omnetpp::cClassDescriptor("UpdateAddHTLC", "omnetpp::cPacket")
 {
     propertynames = nullptr;
 }
 
-update_add_htlcDescriptor::~update_add_htlcDescriptor()
+UpdateAddHTLCDescriptor::~UpdateAddHTLCDescriptor()
 {
     delete[] propertynames;
 }
 
-bool update_add_htlcDescriptor::doesSupport(omnetpp::cObject *obj) const
+bool UpdateAddHTLCDescriptor::doesSupport(omnetpp::cObject *obj) const
 {
-    return dynamic_cast<update_add_htlc *>(obj)!=nullptr;
+    return dynamic_cast<UpdateAddHTLC *>(obj)!=nullptr;
 }
 
-const char **update_add_htlcDescriptor::getPropertyNames() const
+const char **UpdateAddHTLCDescriptor::getPropertyNames() const
 {
     if (!propertynames) {
         static const char *names[] = {  nullptr };
@@ -311,19 +310,19 @@ const char **update_add_htlcDescriptor::getPropertyNames() const
     return propertynames;
 }
 
-const char *update_add_htlcDescriptor::getProperty(const char *propertyname) const
+const char *UpdateAddHTLCDescriptor::getProperty(const char *propertyname) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? basedesc->getProperty(propertyname) : nullptr;
 }
 
-int update_add_htlcDescriptor::getFieldCount() const
+int UpdateAddHTLCDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? 3+basedesc->getFieldCount() : 3;
 }
 
-unsigned int update_add_htlcDescriptor::getFieldTypeFlags(int field) const
+unsigned int UpdateAddHTLCDescriptor::getFieldTypeFlags(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -339,7 +338,7 @@ unsigned int update_add_htlcDescriptor::getFieldTypeFlags(int field) const
     return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
 }
 
-const char *update_add_htlcDescriptor::getFieldName(int field) const
+const char *UpdateAddHTLCDescriptor::getFieldName(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -355,7 +354,7 @@ const char *update_add_htlcDescriptor::getFieldName(int field) const
     return (field>=0 && field<3) ? fieldNames[field] : nullptr;
 }
 
-int update_add_htlcDescriptor::findField(const char *fieldName) const
+int UpdateAddHTLCDescriptor::findField(const char *fieldName) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
@@ -365,7 +364,7 @@ int update_add_htlcDescriptor::findField(const char *fieldName) const
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
-const char *update_add_htlcDescriptor::getFieldTypeString(int field) const
+const char *UpdateAddHTLCDescriptor::getFieldTypeString(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -374,14 +373,14 @@ const char *update_add_htlcDescriptor::getFieldTypeString(int field) const
         field -= basedesc->getFieldCount();
     }
     static const char *fieldTypeStrings[] = {
-        "int",
+        "string",
         "string",
         "double",
     };
     return (field>=0 && field<3) ? fieldTypeStrings[field] : nullptr;
 }
 
-const char **update_add_htlcDescriptor::getFieldPropertyNames(int field) const
+const char **UpdateAddHTLCDescriptor::getFieldPropertyNames(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -394,7 +393,7 @@ const char **update_add_htlcDescriptor::getFieldPropertyNames(int field) const
     }
 }
 
-const char *update_add_htlcDescriptor::getFieldProperty(int field, const char *propertyname) const
+const char *UpdateAddHTLCDescriptor::getFieldProperty(int field, const char *propertyname) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -407,7 +406,7 @@ const char *update_add_htlcDescriptor::getFieldProperty(int field, const char *p
     }
 }
 
-int update_add_htlcDescriptor::getFieldArraySize(void *object, int field) const
+int UpdateAddHTLCDescriptor::getFieldArraySize(void *object, int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -415,13 +414,13 @@ int update_add_htlcDescriptor::getFieldArraySize(void *object, int field) const
             return basedesc->getFieldArraySize(object, field);
         field -= basedesc->getFieldCount();
     }
-    update_add_htlc *pp = (update_add_htlc *)object; (void)pp;
+    UpdateAddHTLC *pp = (UpdateAddHTLC *)object; (void)pp;
     switch (field) {
         default: return 0;
     }
 }
 
-const char *update_add_htlcDescriptor::getFieldDynamicTypeString(void *object, int field, int i) const
+const char *UpdateAddHTLCDescriptor::getFieldDynamicTypeString(void *object, int field, int i) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -429,13 +428,13 @@ const char *update_add_htlcDescriptor::getFieldDynamicTypeString(void *object, i
             return basedesc->getFieldDynamicTypeString(object,field,i);
         field -= basedesc->getFieldCount();
     }
-    update_add_htlc *pp = (update_add_htlc *)object; (void)pp;
+    UpdateAddHTLC *pp = (UpdateAddHTLC *)object; (void)pp;
     switch (field) {
         default: return nullptr;
     }
 }
 
-std::string update_add_htlcDescriptor::getFieldValueAsString(void *object, int field, int i) const
+std::string UpdateAddHTLCDescriptor::getFieldValueAsString(void *object, int field, int i) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -443,16 +442,16 @@ std::string update_add_htlcDescriptor::getFieldValueAsString(void *object, int f
             return basedesc->getFieldValueAsString(object,field,i);
         field -= basedesc->getFieldCount();
     }
-    update_add_htlc *pp = (update_add_htlc *)object; (void)pp;
+    UpdateAddHTLC *pp = (UpdateAddHTLC *)object; (void)pp;
     switch (field) {
-        case 0: return long2string(pp->getSource());
+        case 0: return oppstring2string(pp->getSource());
         case 1: return oppstring2string(pp->getPaymentHash());
         case 2: return double2string(pp->getAmount());
         default: return "";
     }
 }
 
-bool update_add_htlcDescriptor::setFieldValueAsString(void *object, int field, int i, const char *value) const
+bool UpdateAddHTLCDescriptor::setFieldValueAsString(void *object, int field, int i, const char *value) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -460,16 +459,16 @@ bool update_add_htlcDescriptor::setFieldValueAsString(void *object, int field, i
             return basedesc->setFieldValueAsString(object,field,i,value);
         field -= basedesc->getFieldCount();
     }
-    update_add_htlc *pp = (update_add_htlc *)object; (void)pp;
+    UpdateAddHTLC *pp = (UpdateAddHTLC *)object; (void)pp;
     switch (field) {
-        case 0: pp->setSource(string2long(value)); return true;
+        case 0: pp->setSource((value)); return true;
         case 1: pp->setPaymentHash((value)); return true;
         case 2: pp->setAmount(string2double(value)); return true;
         default: return false;
     }
 }
 
-const char *update_add_htlcDescriptor::getFieldStructName(int field) const
+const char *UpdateAddHTLCDescriptor::getFieldStructName(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -482,7 +481,7 @@ const char *update_add_htlcDescriptor::getFieldStructName(int field) const
     };
 }
 
-void *update_add_htlcDescriptor::getFieldStructValuePointer(void *object, int field, int i) const
+void *UpdateAddHTLCDescriptor::getFieldStructValuePointer(void *object, int field, int i) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -490,7 +489,7 @@ void *update_add_htlcDescriptor::getFieldStructValuePointer(void *object, int fi
             return basedesc->getFieldStructValuePointer(object, field, i);
         field -= basedesc->getFieldCount();
     }
-    update_add_htlc *pp = (update_add_htlc *)object; (void)pp;
+    UpdateAddHTLC *pp = (UpdateAddHTLC *)object; (void)pp;
     switch (field) {
         default: return nullptr;
     }

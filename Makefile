@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for wpcn-omnet
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -O out -I. -ljsoncpp
+#  opp_makemake -f --deep -O out -I. -lcrypto -ljsoncpp
 #
 
 # Name of target to be created (-o option)
@@ -26,7 +26,7 @@ INCLUDE_PATH = -I.
 EXTRA_OBJS =
 
 # Additional libraries (-L, -l options)
-LIBS =  -ljsoncpp
+LIBS =  -lcrypto -ljsoncpp
 
 # Output directory
 PROJECT_OUTPUT_DIR = out

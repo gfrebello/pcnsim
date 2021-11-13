@@ -181,7 +181,6 @@ Register_Class(BaseMessage)
 
 BaseMessage::BaseMessage(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
-    this->destination = 0;
     this->messageType = 0;
     this->hopCount = 0;
 }
@@ -226,12 +225,12 @@ void BaseMessage::parsimUnpack(omnetpp::cCommBuffer *b)
     doParsimUnpacking(b,this->hopCount);
 }
 
-int BaseMessage::getDestination() const
+const char * BaseMessage::getDestination() const
 {
-    return this->destination;
+    return this->destination.c_str();
 }
 
-void BaseMessage::setDestination(int destination)
+void BaseMessage::setDestination(const char * destination)
 {
     this->destination = destination;
 }
@@ -375,7 +374,7 @@ const char *BaseMessageDescriptor::getFieldTypeString(int field) const
         field -= basedesc->getFieldCount();
     }
     static const char *fieldTypeStrings[] = {
-        "int",
+        "string",
         "int",
         "int",
     };
@@ -446,7 +445,7 @@ std::string BaseMessageDescriptor::getFieldValueAsString(void *object, int field
     }
     BaseMessage *pp = (BaseMessage *)object; (void)pp;
     switch (field) {
-        case 0: return long2string(pp->getDestination());
+        case 0: return oppstring2string(pp->getDestination());
         case 1: return long2string(pp->getMessageType());
         case 2: return long2string(pp->getHopCount());
         default: return "";
@@ -463,7 +462,7 @@ bool BaseMessageDescriptor::setFieldValueAsString(void *object, int field, int i
     }
     BaseMessage *pp = (BaseMessage *)object; (void)pp;
     switch (field) {
-        case 0: pp->setDestination(string2long(value)); return true;
+        case 0: pp->setDestination((value)); return true;
         case 1: pp->setMessageType(string2long(value)); return true;
         case 2: pp->setHopCount(string2long(value)); return true;
         default: return false;

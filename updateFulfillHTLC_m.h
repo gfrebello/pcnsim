@@ -24,34 +24,34 @@
 // }}
 
 /**
- * Class generated from <tt>updateFulfillHTLC.msg:8</tt> by nedtool.
+ * Class generated from <tt>updateFulfillHTLC.msg:6</tt> by nedtool.
  * <pre>
- * packet update_fulfill_htlc
+ * packet UpdateFulfillHTLC
  * {
  *     string paymentHash;
  *     string preImage;
  * }
  * </pre>
  */
-class update_fulfill_htlc : public ::omnetpp::cPacket
+class UpdateFulfillHTLC : public ::omnetpp::cPacket
 {
   protected:
     ::omnetpp::opp_string paymentHash;
     ::omnetpp::opp_string preImage;
 
   private:
-    void copy(const update_fulfill_htlc& other);
+    void copy(const UpdateFulfillHTLC& other);
 
   protected:
     // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const update_fulfill_htlc&);
+    bool operator==(const UpdateFulfillHTLC&);
 
   public:
-    update_fulfill_htlc(const char *name=nullptr, short kind=0);
-    update_fulfill_htlc(const update_fulfill_htlc& other);
-    virtual ~update_fulfill_htlc();
-    update_fulfill_htlc& operator=(const update_fulfill_htlc& other);
-    virtual update_fulfill_htlc *dup() const override {return new update_fulfill_htlc(*this);}
+    UpdateFulfillHTLC(const char *name=nullptr, short kind=0);
+    UpdateFulfillHTLC(const UpdateFulfillHTLC& other);
+    virtual ~UpdateFulfillHTLC();
+    UpdateFulfillHTLC& operator=(const UpdateFulfillHTLC& other);
+    virtual UpdateFulfillHTLC *dup() const override {return new UpdateFulfillHTLC(*this);}
     virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
     virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
 
@@ -62,8 +62,8 @@ class update_fulfill_htlc : public ::omnetpp::cPacket
     virtual void setPreImage(const char * preImage);
 };
 
-inline void doParsimPacking(omnetpp::cCommBuffer *b, const update_fulfill_htlc& obj) {obj.parsimPack(b);}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *b, update_fulfill_htlc& obj) {obj.parsimUnpack(b);}
+inline void doParsimPacking(omnetpp::cCommBuffer *b, const UpdateFulfillHTLC& obj) {obj.parsimPack(b);}
+inline void doParsimUnpacking(omnetpp::cCommBuffer *b, UpdateFulfillHTLC& obj) {obj.parsimUnpack(b);}
 
 
 #endif // ifndef __UPDATEFULFILLHTLC_M_H

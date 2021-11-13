@@ -14,7 +14,7 @@ class PaymentChannel {
         //some channel parameters defined in BOLT#2
         int _maxAcceptedHTLCs;
         double _HTLCMinimumMsat;
-        int _HTLCNumber;
+        int _numHTLCs;
         double _channelReserveSatoshis;
         std::map<std::string, double> _inFlights;
 
@@ -24,7 +24,7 @@ class PaymentChannel {
         PaymentChannel() {};
         PaymentChannel(cGate *gate);
         //PaymentChannel(double capacity, double fee, double quality, cGate *gate);
-        PaymentChannel(double capacity, double balance, double quality, int maxAcceptedHTLCs, double HTLCMinimumMsat, int HTLCNumber, double channelReserveSatoshis, cGate *gate);
+        PaymentChannel(double capacity, double balance, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate *gate);
 
 
         // Getters and setters
@@ -40,10 +40,10 @@ class PaymentChannel {
          virtual void setMaxAcceptedHTLCs(int maxAcceptedHTLCs) { this->_maxAcceptedHTLCs = maxAcceptedHTLCs; };
          virtual double getHTLCMinimumMSAT() const { return this->_HTLCMinimumMsat; };
          virtual void setHTLCMinimumMSAT(double HTLCMinimumMsat) { this->_HTLCMinimumMsat = HTLCMinimumMsat; };
-         virtual int getHTLCNumber() const { return this->_HTLCNumber; };
-         virtual void setHTLCNumber (int HTLCNumber) { this->_HTLCNumber = HTLCNumber; };
-         virtual void increaseHTLCNumber () { this->_HTLCNumber = _HTLCNumber + 1; };
-         virtual void decreaseHTLCNumber () { this->_HTLCNumber = _HTLCNumber - 1; };
+         virtual int getnumHTLCs() const { return this->_numHTLCs; };
+         virtual void setnumHTLCs (int numHTLCs) { this->_numHTLCs = numHTLCs; };
+         virtual void increasenumHTLCs () { this->_numHTLCs = _numHTLCs + 1; };
+         virtual void decreasenumHTLCs () { this->_numHTLCs = _numHTLCs - 1; };
          virtual double getChannelReserveSatoshis () const { return this->_channelReserveSatoshis; };
          virtual void setChannelReserveSatothis (double channelReserveSatoshis) { this->_channelReserveSatoshis = channelReserveSatoshis; };
          virtual void setInFlight (std::string paymentHash, double amount) { this->_inFlights[paymentHash] = amount; };

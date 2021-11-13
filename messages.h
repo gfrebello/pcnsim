@@ -13,10 +13,11 @@
 
 
 //Other types of messages
-#define TRANSACTION 0
+#define TRANSACTION_INIT 0
 #define TRANSACTION_ACK 1
 #define ROUTE_REQ 2
 #define ROUTE_REPLY 3
 #define ROUTE_ESTABLISH 4
+
 
 #endif

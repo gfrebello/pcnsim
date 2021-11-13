@@ -3,9 +3,7 @@ cplusplus {{
     #include "messages.h"
 }};
 
-
-packet update_fulfill_htlc
-{
+packet UpdateFulfillHTLC {
     string paymentHash;
     string preImage;
 }

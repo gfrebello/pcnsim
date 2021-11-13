@@ -27,7 +27,7 @@
  * <pre>
  * packet Invoice
  * {
- *     int source;
+ *     string source;
  *     double amount;
  *     string paymentHash;
  * }
@@ -36,7 +36,7 @@
 class Invoice : public ::omnetpp::cPacket
 {
   protected:
-    int source;
+    ::omnetpp::opp_string source;
     double amount;
     ::omnetpp::opp_string paymentHash;
 
@@ -57,8 +57,8 @@ class Invoice : public ::omnetpp::cPacket
     virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
 
     // field getter/setter methods
-    virtual int getSource() const;
-    virtual void setSource(int source);
+    virtual const char * getSource() const;
+    virtual void setSource(const char * source);
     virtual double getAmount() const;
     virtual void setAmount(double amount);
     virtual const char * getPaymentHash() const;

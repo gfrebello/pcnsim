@@ -3,9 +3,8 @@ cplusplus {{
     #include "messages.h"
 }};
 
-packet update_add_htlc
-{
-    int source;
+packet UpdateAddHTLC {
+    string source;
     string paymentHash;
     //simtime_t timeout; 
     double amount;
