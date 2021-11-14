@@ -4,7 +4,7 @@
 #include "updateFulfillHTLC_m.h"
 #include "failHTLC_m.h"
 #include "baseMessage_m.h"
-#include "transaction_m.h"
+#include "payment_m.h"
 #include "PaymentChannel.h"
 #include "invoice_m.h"
 
@@ -29,6 +29,7 @@ class FullNode : public cSimpleModule {
 //        virtual BaseMessage* generateHTLC (BaseMessage *ttmsg, cModule *sender);
 //        virtual BaseMessage* handleInvoice(BaseMessage *ttmsg, cModule *sender);
 //        virtual BaseMessage* fulfillHTLC (BaseMessage *ttmsg, cModule *sender);
+        virtual Invoice* generateInvoice(std::string srcName, double value);
 
     public:
         bool _isFirstSelfMessage;
@@ -78,12 +79,12 @@ void FullNode::initialize() {
     // Get name (id) and initialize local topology based on the global topology created by netBuilder
     _localTopology = globalTopology;
     myName = getName();
-    std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t>>> localPendingTransactions = pendingTransactions;
+    std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t>>> localPendingPayments = pendingPayments;
 
     // Initialize payment channels
-    for (auto& neighborToPC : globalPaymentChannels[myName]) {
-        std::string neighborName = neighborToPC.first;
-        std::tuple<double, double, double, int, double, double, cGate*> pcTuple = neighborToPC.second;
+    for (auto& neighborToPCs : nameToPCs[myName]) {
+        std::string neighborName = neighborToPCs.first;
+        std::tuple<double, double, double, int, double, double, cGate*> pcTuple = neighborToPCs.second;
         double capacity = std::get<0>(pcTuple);
         double fee = std::get<1>(pcTuple);
         double quality = std::get<2>(pcTuple);
@@ -127,23 +128,23 @@ void FullNode::initialize() {
         EV << "  towards " << nodeName << " gateIndex is " << gateIndex << endl;
     }
 
-    // Schedule transactions according to workload
-    std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t>>>::iterator it = pendingTransactions.find(myName);
-    if (it != pendingTransactions.end()) {
+    // Schedule payments according to workload
+    std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t>>>::iterator it = pendingPayments.find(myName);
+    if (it != pendingPayments.end()) {
         std::vector<std::tuple<std::string, double, simtime_t>> myWorkload = it->second;
 
-        for (const auto& transactionTuple: myWorkload) {
+        for (const auto& paymentTuple: myWorkload) {
 
-             std::string dstName = std::get<0>(transactionTuple);
-             double value = std::get<1>(transactionTuple);
-             simtime_t time = std::get<2>(transactionTuple);
+             std::string srcName = std::get<0>(paymentTuple);
+             double value = std::get<1>(paymentTuple);
+             simtime_t time = std::get<2>(paymentTuple);
              char msgname[32];
-             sprintf(msgname, "%s-to-%s;value:%0.1f", myName.c_str(), dstName.c_str(), value);
+             sprintf(msgname, "%s-to-%s;value:%0.1f", srcName.c_str(), myName.c_str(), value);
 
-             // Create transaction message
-             Transaction *trMsg = new Transaction(msgname);
-             trMsg->setSource(myName.c_str());
-             trMsg->setDestination(dstName.c_str());
+             // Create payment message
+             Payment *trMsg = new Payment(msgname);
+             trMsg->setSource(srcName.c_str());
+             trMsg->setDestination(myName.c_str());
              trMsg->setValue(value);
              trMsg->setHopCount(0);
 
@@ -165,47 +166,64 @@ void FullNode::initialize() {
 void FullNode::handleMessage(cMessage *msg) {
 
     BaseMessage *baseMsg = check_and_cast<BaseMessage *>(msg);
-//    Transaction *ttmsg = check_and_cast<Transaction *>(msg);
+//    Payment *ttmsg = check_and_cast<Payment *>(msg);
 
     // Treat messages according to their message types
     switch(baseMsg->getMessageType()) {
-        // Initialize transaction
-        case TRANSACTION_INIT:
-            EV << "TRANSACTION_INIT generated.\n";
+
+        // Initialize payment
+        case TRANSACTION_INIT: {
+            Payment *trMsg = check_and_cast<Payment *> (baseMsg->decapsulate());
+            EV << "TRANSACTION_INIT received. Starting payment "<< trMsg->getName() << "\n";
+
+            // Create ephemeral communication channel with the payment source
+            std::string srcName = trMsg->getSource();
+            std::string srcPath = "PCN." + srcName;
+            double value = trMsg->getValue();
+            cModule* srcMod = getModuleByPath(srcPath.c_str());
+            cGate* myGate = this->getOrCreateFirstUnconnectedGate("out", 0, false, true);
+            cGate* srcGate = srcMod->getOrCreateFirstUnconnectedGate("in", 0, false, true);
+            cDelayChannel *tmpChannel = cDelayChannel::create("tmpChannel");
+            tmpChannel->setDelay(100);
+            myGate->connectTo(srcGate, tmpChannel);
+
+            // Create invoice and send it to the payment source
+            Invoice *invMsg = generateInvoice(srcName, value);
+            baseMsg->setMessageType(INVOICE);
+            baseMsg->encapsulate(invMsg);
+            send(baseMsg, myGate);
+
+            // Close ephemeral connection
+            myGate->disconnect();
             break;
+        }
+
+        case INVOICE: {
+            Invoice *invMsg = check_and_cast<Invoice *> (baseMsg->decapsulate());
+            EV << "INVOICE received. Payment hash: " << invMsg->getPaymentHash() << "\n";
+
+            // Find route to destination
+
+        }
         case UPDATE_ADD_HTLC:
-            EV << "UPDATE_ADD_HTLC generated.\n";
+            EV << "UPDATE_ADD_HTLC received.\n";
             break;
         case UPDATE_FAIL_HTLC:
-            EV << "UPDATE_FAIL_HTLC generated.\n";
+            EV << "UPDATE_FAIL_HTLC received.\n";
             break;
         case UPDATE_FULFILL_HTLC:
-            EV << "UPDATE_FULFILL_HTLC generated.\n";
-            break;
-        case INVOICE:
-            EV << "INVOICE generated.\n";
-            break;
-        case REVOKE_AND_ACK:
-            EV << "REVOKE_AND_ACK generated.\n";
-            break;
-        case COMMITMENT_SIGNED:
-            EV << "COMMITMENT_SIGNED generated.\n";
+            EV << "UPDATE_FULFILL_HTLC received.\n";
             break;
 
+            break;
+        case REVOKE_AND_ACK:
+            EV << "REVOKE_AND_ACK received.\n";
+            break;
+        case COMMITMENT_SIGNED:
+            EV << "COMMITMENT_SIGNED received.\n";
+            break;
     }
-//    std::string paymentHash;
-//    std::string preImage;
-//    cModule *senderModule;
-//    double amount;
-//    int *hops;
-//    int hopCount;
-//    int prevNode;
-//    BaseMessage* returnMessage = NULL;
-//    update_fail_htlc *error_message = new update_fail_htlc();
-//
-//
-//
-//    forwardMessage(ttmsg);
+
 }
 
 
@@ -227,7 +245,6 @@ bool FullNode::updatePaymentChannel (std::string nodeName, double value, bool in
 }
 
 void FullNode::forwardMessage(BaseMessage *baseMsg) {
-
 
 //    std::string dstName = msg->getDestination();
 //    std::string prevName = msg->getSenderModule()->getName();
@@ -271,8 +288,8 @@ void FullNode::forwardMessage(BaseMessage *baseMsg) {
 //            emit(_signals[signalName],_paymentChannels[nextName]._capacity);
 //            msg->setHopCount(msg->getHopCount()+1);
 //            send(msg, "out", outGateIndex);
-//        } else { // Not enough capacity to forward. Fail the transaction.
-//            EV << "Not enough capacity to forward payment. Failing the transaction...\n";
+//        } else { // Not enough capacity to forward. Fail the payment.
+//            EV << "Not enough capacity to forward payment. Failing the payment...\n";
 //            delete msg;
 //        }
 //
@@ -285,7 +302,7 @@ void FullNode::forwardMessage(BaseMessage *baseMsg) {
 //             msg->setHopCount(msg->getHopCount()+1);
 //             send(msg, "out", outGateIndex);
 //        } else {
-//            EV << "Not enough capacity to initialize payment. Failing the transaction...\n";
+//            EV << "Not enough capacity to initialize payment. Failing the payment...\n";
 //            delete msg;
 //        }
 //    } else {
@@ -454,25 +471,25 @@ void FullNode::refreshDisplay() const {
 //
 //}
 //
-//Invoice* FullNode::generateInvoice(std::string destination, double amount){
-//    // create channel with source
-//    std::string sourceName = getName();
-//    std::string preImage;
-//    std::string preImageHash;
-//
-//    preImage = gen_random();
-//    preImageHash = sha256(preImage);
-//
-//    _myPreImages[preImageHash] = preImage;
-//
-//    Invoice *invoice = new Invoice();
-//    invoice->setDestination(destination);
-//    invoice->setAmount(amount);
-//    invoice->setPaymentHash(preImageHash.c_str());
-//
-//    return invoice;
-//
-//}
+Invoice* FullNode::generateInvoice(std::string srcName, double value) {
+
+    //std::string srcName = getName();
+    std::string preImage;
+    std::string preImageHash;
+
+    //preImage = genRandom();
+    preImage = generatePreImage();
+    preImageHash = sha256(preImage);
+
+    _myPreImages[preImageHash] = preImage;
+
+    Invoice *invoice = new Invoice();
+    invoice->setSource(srcName.c_str());
+    invoice->setValue(value);
+    invoice->setPaymentHash(preImageHash.c_str());
+
+    return invoice;
+}
 //
 //
 //// getDestinationGate returns the gate associated with the destination received as argument

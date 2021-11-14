@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by nedtool 5.7 from transaction.msg.
+// Generated file, do not edit! Created by nedtool 5.7 from payment.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:
@@ -26,7 +26,7 @@
 
 #include <iostream>
 #include <sstream>
-#include "transaction_m.h"
+#include "payment_m.h"
 
 namespace omnetpp {
 
@@ -177,24 +177,24 @@ inline std::ostream& operator<<(std::ostream& out, const std::vector<T,A>& vec)
     return out;
 }
 
-Register_Class(Transaction)
+Register_Class(Payment)
 
-Transaction::Transaction(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
+Payment::Payment(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
     this->hopCount = 0;
     this->value = 0;
 }
 
-Transaction::Transaction(const Transaction& other) : ::omnetpp::cPacket(other)
+Payment::Payment(const Payment& other) : ::omnetpp::cPacket(other)
 {
     copy(other);
 }
 
-Transaction::~Transaction()
+Payment::~Payment()
 {
 }
 
-Transaction& Transaction::operator=(const Transaction& other)
+Payment& Payment::operator=(const Payment& other)
 {
     if (this==&other) return *this;
     ::omnetpp::cPacket::operator=(other);
@@ -202,7 +202,7 @@ Transaction& Transaction::operator=(const Transaction& other)
     return *this;
 }
 
-void Transaction::copy(const Transaction& other)
+void Payment::copy(const Payment& other)
 {
     this->source = other.source;
     this->destination = other.destination;
@@ -210,7 +210,7 @@ void Transaction::copy(const Transaction& other)
     this->value = other.value;
 }
 
-void Transaction::parsimPack(omnetpp::cCommBuffer *b) const
+void Payment::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->source);
@@ -219,7 +219,7 @@ void Transaction::parsimPack(omnetpp::cCommBuffer *b) const
     doParsimPacking(b,this->value);
 }
 
-void Transaction::parsimUnpack(omnetpp::cCommBuffer *b)
+void Payment::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->source);
@@ -228,53 +228,53 @@ void Transaction::parsimUnpack(omnetpp::cCommBuffer *b)
     doParsimUnpacking(b,this->value);
 }
 
-const char * Transaction::getSource() const
+const char * Payment::getSource() const
 {
     return this->source.c_str();
 }
 
-void Transaction::setSource(const char * source)
+void Payment::setSource(const char * source)
 {
     this->source = source;
 }
 
-const char * Transaction::getDestination() const
+const char * Payment::getDestination() const
 {
     return this->destination.c_str();
 }
 
-void Transaction::setDestination(const char * destination)
+void Payment::setDestination(const char * destination)
 {
     this->destination = destination;
 }
 
-int Transaction::getHopCount() const
+int Payment::getHopCount() const
 {
     return this->hopCount;
 }
 
-void Transaction::setHopCount(int hopCount)
+void Payment::setHopCount(int hopCount)
 {
     this->hopCount = hopCount;
 }
 
-double Transaction::getValue() const
+double Payment::getValue() const
 {
     return this->value;
 }
 
-void Transaction::setValue(double value)
+void Payment::setValue(double value)
 {
     this->value = value;
 }
 
-class TransactionDescriptor : public omnetpp::cClassDescriptor
+class PaymentDescriptor : public omnetpp::cClassDescriptor
 {
   private:
     mutable const char **propertynames;
   public:
-    TransactionDescriptor();
-    virtual ~TransactionDescriptor();
+    PaymentDescriptor();
+    virtual ~PaymentDescriptor();
 
     virtual bool doesSupport(omnetpp::cObject *obj) const override;
     virtual const char **getPropertyNames() const override;
@@ -296,24 +296,24 @@ class TransactionDescriptor : public omnetpp::cClassDescriptor
     virtual void *getFieldStructValuePointer(void *object, int field, int i) const override;
 };
 
-Register_ClassDescriptor(TransactionDescriptor)
+Register_ClassDescriptor(PaymentDescriptor)
 
-TransactionDescriptor::TransactionDescriptor() : omnetpp::cClassDescriptor("Transaction", "omnetpp::cPacket")
+PaymentDescriptor::PaymentDescriptor() : omnetpp::cClassDescriptor("Payment", "omnetpp::cPacket")
 {
     propertynames = nullptr;
 }
 
-TransactionDescriptor::~TransactionDescriptor()
+PaymentDescriptor::~PaymentDescriptor()
 {
     delete[] propertynames;
 }
 
-bool TransactionDescriptor::doesSupport(omnetpp::cObject *obj) const
+bool PaymentDescriptor::doesSupport(omnetpp::cObject *obj) const
 {
-    return dynamic_cast<Transaction *>(obj)!=nullptr;
+    return dynamic_cast<Payment *>(obj)!=nullptr;
 }
 
-const char **TransactionDescriptor::getPropertyNames() const
+const char **PaymentDescriptor::getPropertyNames() const
 {
     if (!propertynames) {
         static const char *names[] = {  nullptr };
@@ -324,19 +324,19 @@ const char **TransactionDescriptor::getPropertyNames() const
     return propertynames;
 }
 
-const char *TransactionDescriptor::getProperty(const char *propertyname) const
+const char *PaymentDescriptor::getProperty(const char *propertyname) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? basedesc->getProperty(propertyname) : nullptr;
 }
 
-int TransactionDescriptor::getFieldCount() const
+int PaymentDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? 4+basedesc->getFieldCount() : 4;
 }
 
-unsigned int TransactionDescriptor::getFieldTypeFlags(int field) const
+unsigned int PaymentDescriptor::getFieldTypeFlags(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -353,7 +353,7 @@ unsigned int TransactionDescriptor::getFieldTypeFlags(int field) const
     return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
 }
 
-const char *TransactionDescriptor::getFieldName(int field) const
+const char *PaymentDescriptor::getFieldName(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -370,7 +370,7 @@ const char *TransactionDescriptor::getFieldName(int field) const
     return (field>=0 && field<4) ? fieldNames[field] : nullptr;
 }
 
-int TransactionDescriptor::findField(const char *fieldName) const
+int PaymentDescriptor::findField(const char *fieldName) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
@@ -381,7 +381,7 @@ int TransactionDescriptor::findField(const char *fieldName) const
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
-const char *TransactionDescriptor::getFieldTypeString(int field) const
+const char *PaymentDescriptor::getFieldTypeString(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -398,7 +398,7 @@ const char *TransactionDescriptor::getFieldTypeString(int field) const
     return (field>=0 && field<4) ? fieldTypeStrings[field] : nullptr;
 }
 
-const char **TransactionDescriptor::getFieldPropertyNames(int field) const
+const char **PaymentDescriptor::getFieldPropertyNames(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -411,7 +411,7 @@ const char **TransactionDescriptor::getFieldPropertyNames(int field) const
     }
 }
 
-const char *TransactionDescriptor::getFieldProperty(int field, const char *propertyname) const
+const char *PaymentDescriptor::getFieldProperty(int field, const char *propertyname) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -424,7 +424,7 @@ const char *TransactionDescriptor::getFieldProperty(int field, const char *prope
     }
 }
 
-int TransactionDescriptor::getFieldArraySize(void *object, int field) const
+int PaymentDescriptor::getFieldArraySize(void *object, int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -432,13 +432,13 @@ int TransactionDescriptor::getFieldArraySize(void *object, int field) const
             return basedesc->getFieldArraySize(object, field);
         field -= basedesc->getFieldCount();
     }
-    Transaction *pp = (Transaction *)object; (void)pp;
+    Payment *pp = (Payment *)object; (void)pp;
     switch (field) {
         default: return 0;
     }
 }
 
-const char *TransactionDescriptor::getFieldDynamicTypeString(void *object, int field, int i) const
+const char *PaymentDescriptor::getFieldDynamicTypeString(void *object, int field, int i) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -446,13 +446,13 @@ const char *TransactionDescriptor::getFieldDynamicTypeString(void *object, int f
             return basedesc->getFieldDynamicTypeString(object,field,i);
         field -= basedesc->getFieldCount();
     }
-    Transaction *pp = (Transaction *)object; (void)pp;
+    Payment *pp = (Payment *)object; (void)pp;
     switch (field) {
         default: return nullptr;
     }
 }
 
-std::string TransactionDescriptor::getFieldValueAsString(void *object, int field, int i) const
+std::string PaymentDescriptor::getFieldValueAsString(void *object, int field, int i) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -460,7 +460,7 @@ std::string TransactionDescriptor::getFieldValueAsString(void *object, int field
             return basedesc->getFieldValueAsString(object,field,i);
         field -= basedesc->getFieldCount();
     }
-    Transaction *pp = (Transaction *)object; (void)pp;
+    Payment *pp = (Payment *)object; (void)pp;
     switch (field) {
         case 0: return oppstring2string(pp->getSource());
         case 1: return oppstring2string(pp->getDestination());
@@ -470,7 +470,7 @@ std::string TransactionDescriptor::getFieldValueAsString(void *object, int field
     }
 }
 
-bool TransactionDescriptor::setFieldValueAsString(void *object, int field, int i, const char *value) const
+bool PaymentDescriptor::setFieldValueAsString(void *object, int field, int i, const char *value) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -478,7 +478,7 @@ bool TransactionDescriptor::setFieldValueAsString(void *object, int field, int i
             return basedesc->setFieldValueAsString(object,field,i,value);
         field -= basedesc->getFieldCount();
     }
-    Transaction *pp = (Transaction *)object; (void)pp;
+    Payment *pp = (Payment *)object; (void)pp;
     switch (field) {
         case 0: pp->setSource((value)); return true;
         case 1: pp->setDestination((value)); return true;
@@ -488,7 +488,7 @@ bool TransactionDescriptor::setFieldValueAsString(void *object, int field, int i
     }
 }
 
-const char *TransactionDescriptor::getFieldStructName(int field) const
+const char *PaymentDescriptor::getFieldStructName(int field) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -501,7 +501,7 @@ const char *TransactionDescriptor::getFieldStructName(int field) const
     };
 }
 
-void *TransactionDescriptor::getFieldStructValuePointer(void *object, int field, int i) const
+void *PaymentDescriptor::getFieldStructValuePointer(void *object, int field, int i) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -509,7 +509,7 @@ void *TransactionDescriptor::getFieldStructValuePointer(void *object, int field,
             return basedesc->getFieldStructValuePointer(object, field, i);
         field -= basedesc->getFieldCount();
     }
-    Transaction *pp = (Transaction *)object; (void)pp;
+    Payment *pp = (Payment *)object; (void)pp;
     switch (field) {
         default: return nullptr;
     }

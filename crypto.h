@@ -2,7 +2,6 @@
 #define _CRYPTO_H_
 
 std::string sha256 (const std::string);
-
-std::string genRandom ();
+std::string generatePreImage();
 
 #endif

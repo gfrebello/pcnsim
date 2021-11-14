@@ -1,9 +1,9 @@
 //
-// Generated file, do not edit! Created by nedtool 5.7 from transaction.msg.
+// Generated file, do not edit! Created by nedtool 5.7 from payment.msg.
 //
 
-#ifndef __TRANSACTION_M_H
-#define __TRANSACTION_M_H
+#ifndef __PAYMENT_M_H
+#define __PAYMENT_M_H
 
 #if defined(__clang__)
 #  pragma clang diagnostic ignored "-Wreserved-id-macro"
@@ -23,9 +23,9 @@
 // }}
 
 /**
- * Class generated from <tt>transaction.msg:5</tt> by nedtool.
+ * Class generated from <tt>payment.msg:5</tt> by nedtool.
  * <pre>
- * packet Transaction
+ * packet Payment
  * {
  *     string source;
  *     string destination;
@@ -34,7 +34,7 @@
  * }
  * </pre>
  */
-class Transaction : public ::omnetpp::cPacket
+class Payment : public ::omnetpp::cPacket
 {
   protected:
     ::omnetpp::opp_string source;
@@ -43,18 +43,18 @@ class Transaction : public ::omnetpp::cPacket
     double value;
 
   private:
-    void copy(const Transaction& other);
+    void copy(const Payment& other);
 
   protected:
     // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const Transaction&);
+    bool operator==(const Payment&);
 
   public:
-    Transaction(const char *name=nullptr, short kind=0);
-    Transaction(const Transaction& other);
-    virtual ~Transaction();
-    Transaction& operator=(const Transaction& other);
-    virtual Transaction *dup() const override {return new Transaction(*this);}
+    Payment(const char *name=nullptr, short kind=0);
+    Payment(const Payment& other);
+    virtual ~Payment();
+    Payment& operator=(const Payment& other);
+    virtual Payment *dup() const override {return new Payment(*this);}
     virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
     virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
 
@@ -69,9 +69,9 @@ class Transaction : public ::omnetpp::cPacket
     virtual void setValue(double value);
 };
 
-inline void doParsimPacking(omnetpp::cCommBuffer *b, const Transaction& obj) {obj.parsimPack(b);}
-inline void doParsimUnpacking(omnetpp::cCommBuffer *b, Transaction& obj) {obj.parsimUnpack(b);}
+inline void doParsimPacking(omnetpp::cCommBuffer *b, const Payment& obj) {obj.parsimPack(b);}
+inline void doParsimUnpacking(omnetpp::cCommBuffer *b, Payment& obj) {obj.parsimUnpack(b);}
 
 
-#endif // ifndef __TRANSACTION_M_H
+#endif // ifndef __PAYMENT_M_H
 

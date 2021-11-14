@@ -4,6 +4,7 @@
 #include <string>
 #include <ctime>
 #include <unistd.h>
+#include <random>
 
 #include "globals.h"
 
@@ -26,17 +27,26 @@ string sha256(const string str)
     return ss.str();
 }
 
-string gen_random() {
-    static const char alphanum[] =
+string generatePreImage() {
+    std::random_device rd;
+    std::default_random_engine gen(rd());
+
+    const char charset[] =
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz";
-    string tmp_s;
-    tmp_s.reserve(PREIMAGE_SIZE);
+        //"!\xA3$%^&*():@~#'?/><.,|`\xAC\xA6";
 
-    for (int i = 0; i < PREIMAGE_SIZE; ++i) {
-        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+    string preImage;
+    preImage.reserve(PREIMAGE_SIZE);
+    std::uniform_int_distribution<int> random_number(0, sizeof(charset) - 1);
+
+    for( int i = 0; i < PREIMAGE_SIZE; i++ ) {
+        preImage.push_back(charset[random_number(gen)]);
     }
 
-    return tmp_s;
+    return preImage;
 }
+
+
+

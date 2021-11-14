@@ -2,8 +2,8 @@ cplusplus {{
     #include "messages.h"
 }};
 
-packet Invoice{
+packet Invoice {
     string source;
-    double amount;
+    double value;
     string paymentHash;
 }

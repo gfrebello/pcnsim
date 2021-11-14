@@ -2,7 +2,7 @@ cplusplus{{
 #include "globals.h"
 }};
 
-packet Transaction {
+packet Payment {
     string source;
     string destination;
     int hopCount = 0;

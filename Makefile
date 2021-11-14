@@ -42,9 +42,9 @@ OBJS = \
     $O/baseMessage_m.o \
     $O/failHTLC_m.o \
     $O/invoice_m.o \
+    $O/payment_m.o \
     $O/routeReply_m.o \
     $O/routeReq_m.o \
-    $O/transaction_m.o \
     $O/updateAddHTLC_m.o \
     $O/updateFulfillHTLC_m.o
 
@@ -53,9 +53,9 @@ MSGFILES = \
     baseMessage.msg \
     failHTLC.msg \
     invoice.msg \
+    payment.msg \
     routeReply.msg \
     routeReq.msg \
-    transaction.msg \
     updateAddHTLC.msg \
     updateFulfillHTLC.msg
 

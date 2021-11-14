@@ -1,8 +1,8 @@
 #include "globals.h"
 
 cTopology *globalTopology = new cTopology("globalTopology");
-std::map< std::string, std::vector< std::tuple<std::string, double, simtime_t> > > pendingTransactions;
-std::map< std::string, std::map<std::string, std::tuple<double, double, double, int, double, double, cGate*> > > globalPaymentChannels;
+std::map< std::string, std::vector< std::tuple<std::string, double, simtime_t> > > pendingPayments;
+std::map< std::string, std::map<std::string, std::tuple<double, double, double, int, double, double, cGate*> > > nameToPCs;
 
 class NetBuilder : public cSimpleModule {
     public:
@@ -31,11 +31,11 @@ void NetBuilder::handleMessage(cMessage *msg) {
     buildNetwork(getParentModule());
 }
 
-void NetBuilder::connect(cGate *src, cGate *dst, double linkDelay) {
+void NetBuilder::connect(cGate *srcGate, cGate *dstGate, double linkDelay) {
 
     cDelayChannel *channel = cDelayChannel::create("channel");
     channel->setDelay(linkDelay);
-    src->connectTo(dst, channel);
+    srcGate->connectTo(dstGate, channel);
 }
 
 bool NetBuilder::nodeExists(std::map<int, cModule*> nodeList, int nodeId) {
@@ -73,10 +73,11 @@ void NetBuilder::initWorkload() {
         // Print found edges
         EV << "PAYMENT FOUND: (" << srcId << ", " << dstId << "); Value = " << value << ". Processing...\n";
 
+        // Add payments to global map (index by the destination because it facilitates sending the invoice later)
         std::string srcName = "node" + std::to_string(srcId);
         std::string dstName = "node" + std::to_string(dstId);
-        auto transactionTuple = std::make_tuple(dstName, value, time);
-        pendingTransactions[srcName].push_back(transactionTuple);
+        auto paymentTuple = std::make_tuple(srcName, value, time);
+        pendingPayments[dstName].push_back(paymentTuple);
     }
 
 }
@@ -190,8 +191,8 @@ void NetBuilder::buildNetwork(cModule *parent) {
         //Initialize payment channels
         auto pcSrcToDst = std::make_tuple(srcCapacity, srcFee, linkQualitySrcToDst, srcMaxAcceptedHTLCs, srcHTLCMinimumMsat, srcChannelReserveSatoshis, dstIn);
         auto pcDstToSrc = std::make_tuple(dstCapacity, dstFee, linkQualityDstToSrc, dstMaxAcceptedHTLCs, dstHTLCMinimumMsat, dstChannelReserveSatoshis, srcIn);
-        globalPaymentChannels[srcName][dstName] = pcSrcToDst;
-        globalPaymentChannels[dstName][srcName] = pcDstToSrc;
+        nameToPCs[srcName][dstName] = pcSrcToDst;
+        nameToPCs[dstName][srcName] = pcDstToSrc;
     }
 
     // Build modules
