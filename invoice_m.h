@@ -28,6 +28,7 @@
  * packet Invoice
  * {
  *     string source;
+ *     string destination;
  *     double value;
  *     string paymentHash;
  * }
@@ -37,6 +38,7 @@ class Invoice : public ::omnetpp::cPacket
 {
   protected:
     ::omnetpp::opp_string source;
+    ::omnetpp::opp_string destination;
     double value;
     ::omnetpp::opp_string paymentHash;
 
@@ -59,6 +61,8 @@ class Invoice : public ::omnetpp::cPacket
     // field getter/setter methods
     virtual const char * getSource() const;
     virtual void setSource(const char * source);
+    virtual const char * getDestination() const;
+    virtual void setDestination(const char * destination);
     virtual double getValue() const;
     virtual void setValue(double value);
     virtual const char * getPaymentHash() const;

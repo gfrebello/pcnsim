@@ -204,6 +204,7 @@ Invoice& Invoice::operator=(const Invoice& other)
 void Invoice::copy(const Invoice& other)
 {
     this->source = other.source;
+    this->destination = other.destination;
     this->value = other.value;
     this->paymentHash = other.paymentHash;
 }
@@ -212,6 +213,7 @@ void Invoice::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->source);
+    doParsimPacking(b,this->destination);
     doParsimPacking(b,this->value);
     doParsimPacking(b,this->paymentHash);
 }
@@ -220,6 +222,7 @@ void Invoice::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->source);
+    doParsimUnpacking(b,this->destination);
     doParsimUnpacking(b,this->value);
     doParsimUnpacking(b,this->paymentHash);
 }
@@ -232,6 +235,16 @@ const char * Invoice::getSource() const
 void Invoice::setSource(const char * source)
 {
     this->source = source;
+}
+
+const char * Invoice::getDestination() const
+{
+    return this->destination.c_str();
+}
+
+void Invoice::setDestination(const char * destination)
+{
+    this->destination = destination;
 }
 
 double Invoice::getValue() const
@@ -319,7 +332,7 @@ const char *InvoiceDescriptor::getProperty(const char *propertyname) const
 int InvoiceDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 3+basedesc->getFieldCount() : 3;
+    return basedesc ? 4+basedesc->getFieldCount() : 4;
 }
 
 unsigned int InvoiceDescriptor::getFieldTypeFlags(int field) const
@@ -334,8 +347,9 @@ unsigned int InvoiceDescriptor::getFieldTypeFlags(int field) const
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
 }
 
 const char *InvoiceDescriptor::getFieldName(int field) const
@@ -348,10 +362,11 @@ const char *InvoiceDescriptor::getFieldName(int field) const
     }
     static const char *fieldNames[] = {
         "source",
+        "destination",
         "value",
         "paymentHash",
     };
-    return (field>=0 && field<3) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<4) ? fieldNames[field] : nullptr;
 }
 
 int InvoiceDescriptor::findField(const char *fieldName) const
@@ -359,8 +374,9 @@ int InvoiceDescriptor::findField(const char *fieldName) const
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
     if (fieldName[0]=='s' && strcmp(fieldName, "source")==0) return base+0;
-    if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+1;
-    if (fieldName[0]=='p' && strcmp(fieldName, "paymentHash")==0) return base+2;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destination")==0) return base+1;
+    if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+2;
+    if (fieldName[0]=='p' && strcmp(fieldName, "paymentHash")==0) return base+3;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -374,10 +390,11 @@ const char *InvoiceDescriptor::getFieldTypeString(int field) const
     }
     static const char *fieldTypeStrings[] = {
         "string",
+        "string",
         "double",
         "string",
     };
-    return (field>=0 && field<3) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<4) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **InvoiceDescriptor::getFieldPropertyNames(int field) const
@@ -445,8 +462,9 @@ std::string InvoiceDescriptor::getFieldValueAsString(void *object, int field, in
     Invoice *pp = (Invoice *)object; (void)pp;
     switch (field) {
         case 0: return oppstring2string(pp->getSource());
-        case 1: return double2string(pp->getValue());
-        case 2: return oppstring2string(pp->getPaymentHash());
+        case 1: return oppstring2string(pp->getDestination());
+        case 2: return double2string(pp->getValue());
+        case 3: return oppstring2string(pp->getPaymentHash());
         default: return "";
     }
 }
@@ -462,8 +480,9 @@ bool InvoiceDescriptor::setFieldValueAsString(void *object, int field, int i, co
     Invoice *pp = (Invoice *)object; (void)pp;
     switch (field) {
         case 0: pp->setSource((value)); return true;
-        case 1: pp->setValue(string2double(value)); return true;
-        case 2: pp->setPaymentHash((value)); return true;
+        case 1: pp->setDestination((value)); return true;
+        case 2: pp->setValue(string2double(value)); return true;
+        case 3: pp->setPaymentHash((value)); return true;
         default: return false;
     }
 }

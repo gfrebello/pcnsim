@@ -17,6 +17,12 @@ class FullNode : public cSimpleModule {
         virtual void refreshDisplay() const;
 //        virtual int getDestinationGate (int destination);
 
+        // Routing functions
+        virtual std::vector<std::string> getPath(std::map<std::string, std::string> parents, std::string target);
+        virtual std::string minDistanceNode (std::map<std::string, double> distances, std::map<std::string, bool> visited);
+        virtual std::vector<std::string> dijkstraWeighedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph);
+
+
         std::map<std::string, std::string> _myPreImages; // paymentHash to preImage
         std::map<std::string, std::string> _myInFlights; // paymentHash to nodeName (who owes me)
         //std::map<std::string, int*> _inFlightsPath;
@@ -48,7 +54,6 @@ class FullNode : public cSimpleModule {
 Define_Module(FullNode);
 
 std::string myName;
-
 
 // Util functions
 void FullNode::printPaymentChannels() {
@@ -202,8 +207,21 @@ void FullNode::handleMessage(cMessage *msg) {
             Invoice *invMsg = check_and_cast<Invoice *> (baseMsg->decapsulate());
             EV << "INVOICE received. Payment hash: " << invMsg->getPaymentHash() << "\n";
 
-            // Find route to destination
+            //std::string dstName = invMsg->getSenderModule()->getName();
+            std::string dstName = invMsg->getDestination();
+            std::string srcName = getName();
 
+            // Find route to destination
+            std::vector<std::string> path = this->dijkstraWeighedShortestPath(srcName, dstName, adjMatrix);
+
+            // Print route
+            std::string printPath = "Full route to destination: ";
+            for (auto hop: path)
+                printPath = printPath + hop + ", ";
+            printPath += "\n";
+            EV << printPath;
+
+            break;
         }
         case UPDATE_ADD_HTLC:
             EV << "UPDATE_ADD_HTLC received.\n";
@@ -471,6 +489,8 @@ void FullNode::refreshDisplay() const {
 //
 //}
 //
+
+
 Invoice* FullNode::generateInvoice(std::string srcName, double value) {
 
     //std::string srcName = getName();
@@ -485,11 +505,97 @@ Invoice* FullNode::generateInvoice(std::string srcName, double value) {
 
     Invoice *invoice = new Invoice();
     invoice->setSource(srcName.c_str());
+    invoice->setDestination(getName());
     invoice->setValue(value);
     invoice->setPaymentHash(preImageHash.c_str());
 
     return invoice;
 }
+
+// Selects the node with minimum distance out of a distances list while disregarding visited nodes
+std::string FullNode::minDistanceNode (std::map<std::string, double> distances, std::map<std::string, bool> visited) {
+
+    // Initialize min value
+    double minDist = INT_MAX;
+    std::string minName = "";
+
+    for (auto& node : distances) {
+        std::string nodeName = node.first;
+        double dist = node.second;
+        bool isNodeVisited = visited.find(nodeName)->second;
+        if (!isNodeVisited && dist <= minDist) {
+            minDist = dist;
+            minName = nodeName;
+        }
+    }
+    if (minDist == INT_MAX){
+        return NULL;
+    }
+    else{
+        return minName;
+    }
+
+}
+
+// Return the path to source given a target and its parent nodes
+std::vector<std::string> FullNode::getPath (std::map<std::string, std::string> parents, std::string target) {
+
+    std::vector<std::string> path;
+    std::string node = target;
+
+    // Recursively traverse the parents path
+    while (parents[node] != node) {
+        path.insert(path.begin(), node);
+        node = parents[node];
+    }
+
+    // Set ourselves as the source node
+    path.insert(path.begin(), getName());
+
+    return path;
+}
+
+// This function returns the Dijkstra's shortest path from a source to some target given an adjacency matrix
+std::vector<std::string> FullNode::dijkstraWeighedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph) {
+
+    int numNodes = graph.size();
+    std::map<std::string, double> distances;
+    std::map<std::string, bool> visited;
+    std::map<std::string, std::string> parents; // a.k.a nodeToParent
+
+    // Initialize distances as infinite and visited array as false
+    for (auto & node : graph) {
+        distances[node.first] = INT_MAX;
+        visited[node.first] = false;
+        parents[node.first] = "";
+    }
+
+    // Set source node distance to zero and parent to itself
+    distances[src] = 0;
+    parents[src] = src;
+
+    for (int i = 0; i < numNodes-1; i++) {
+        std::string node = minDistanceNode(distances, visited);
+        visited[node] = true;
+
+        std::vector<std::pair<std::string,double>>::iterator it;
+
+        // Update distance value of neighbor nodes of the current node
+        for (it = graph[node].begin(); it != graph[node].end(); it++){
+            std::string neighbor = it->first;
+            double linkWeight = it->second;
+            if (!visited[neighbor]) {
+                if(distances[node] + linkWeight < distances[neighbor]) {
+                    parents[neighbor] = node;
+                    distances[neighbor] = distances[node] + linkWeight;
+                }
+            }
+        }
+    }
+    return getPath(parents, target);
+}
+
+
 //
 //
 //// getDestinationGate returns the gate associated with the destination received as argument

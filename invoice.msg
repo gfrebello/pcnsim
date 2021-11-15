@@ -4,6 +4,7 @@ cplusplus {{
 
 packet Invoice {
     string source;
+    string destination;
     double value;
     string paymentHash;
 }
