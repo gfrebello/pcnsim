@@ -20,7 +20,7 @@ class FullNode : public cSimpleModule {
         // Routing functions
         virtual std::vector<std::string> getPath(std::map<std::string, std::string> parents, std::string target);
         virtual std::string minDistanceNode (std::map<std::string, double> distances, std::map<std::string, bool> visited);
-        virtual std::vector<std::string> dijkstraWeighedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph);
+        virtual std::vector<std::string> dijkstraWeightedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph);
 
 
         std::map<std::string, std::string> _myPreImages; // paymentHash to preImage
@@ -212,7 +212,7 @@ void FullNode::handleMessage(cMessage *msg) {
             std::string srcName = getName();
 
             // Find route to destination
-            std::vector<std::string> path = this->dijkstraWeighedShortestPath(srcName, dstName, adjMatrix);
+            std::vector<std::string> path = this->dijkstraWeightedShortestPath(srcName, dstName, adjMatrix);
 
             // Print route
             std::string printPath = "Full route to destination: ";
@@ -556,7 +556,7 @@ std::vector<std::string> FullNode::getPath (std::map<std::string, std::string> p
 }
 
 // This function returns the Dijkstra's shortest path from a source to some target given an adjacency matrix
-std::vector<std::string> FullNode::dijkstraWeighedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph) {
+std::vector<std::string> FullNode::dijkstraWeightedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph) {
 
     int numNodes = graph.size();
     std::map<std::string, double> distances;
