@@ -100,30 +100,6 @@ void NetBuilder::buildNetwork(cModule *parent) {
     cTopology::Node *srcNode;
     cTopology::Node *dstNode;
     std::vector<std::tuple<cTopology::Link*, cGate*, cGate*>> linksBuffer;
-//    std::vector<int> nodeList;
-//
-//    // Count the number of unique nodes to initialize adjacency matrix
-//    while (getline(topologyFile, line, '\n')) {
-//
-//        // Skip headers and empty lines
-//        if (line.empty() || line[0] == '#')
-//            continue;
-//        std::vector<std::string> tokens = cStringTokenizer(line.c_str()).asVector();
-//        int srcId = atoi(tokens[0].c_str());
-//        int dstId = atoi(tokens[1].c_str());
-//
-//        if(std::find(nodeList.begin(), nodeList.end(), srcId) == nodeList.end())
-//             nodeList.push_back(srcId);
-//
-//        if(std::find(nodeList.begin(), nodeList.end(), dstId) == nodeList.end())
-//             nodeList.push_back(dstId);
-//    }
-//
-//    double adjMatrix[nodeList.size()][nodeList.size()];
-
-    // Reset file and build the network
-    //topologyFile.clear();
-    //topologyFile.seekg(0);
 
     EV << "Building network from file: " << par("topologyFile").stringValue() << "\n";
 
