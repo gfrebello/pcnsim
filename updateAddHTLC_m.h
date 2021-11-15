@@ -31,7 +31,7 @@
  *     string source;
  *     string paymentHash;
  *     //simtime_t timeout; 
- *     double amount;
+ *     double value;
  * }
  * </pre>
  */
@@ -40,7 +40,7 @@ class UpdateAddHTLC : public ::omnetpp::cPacket
   protected:
     ::omnetpp::opp_string source;
     ::omnetpp::opp_string paymentHash;
-    double amount;
+    double value;
 
   private:
     void copy(const UpdateAddHTLC& other);
@@ -63,8 +63,8 @@ class UpdateAddHTLC : public ::omnetpp::cPacket
     virtual void setSource(const char * source);
     virtual const char * getPaymentHash() const;
     virtual void setPaymentHash(const char * paymentHash);
-    virtual double getAmount() const;
-    virtual void setAmount(double amount);
+    virtual double getValue() const;
+    virtual void setValue(double value);
 };
 
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const UpdateAddHTLC& obj) {obj.parsimPack(b);}

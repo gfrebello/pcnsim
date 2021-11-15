@@ -207,6 +207,7 @@ void BaseMessage::copy(const BaseMessage& other)
     this->destination = other.destination;
     this->messageType = other.messageType;
     this->hopCount = other.hopCount;
+    this->hops = other.hops;
 }
 
 void BaseMessage::parsimPack(omnetpp::cCommBuffer *b) const
@@ -215,6 +216,7 @@ void BaseMessage::parsimPack(omnetpp::cCommBuffer *b) const
     doParsimPacking(b,this->destination);
     doParsimPacking(b,this->messageType);
     doParsimPacking(b,this->hopCount);
+    doParsimPacking(b,this->hops);
 }
 
 void BaseMessage::parsimUnpack(omnetpp::cCommBuffer *b)
@@ -223,6 +225,7 @@ void BaseMessage::parsimUnpack(omnetpp::cCommBuffer *b)
     doParsimUnpacking(b,this->destination);
     doParsimUnpacking(b,this->messageType);
     doParsimUnpacking(b,this->hopCount);
+    doParsimUnpacking(b,this->hops);
 }
 
 const char * BaseMessage::getDestination() const
@@ -253,6 +256,16 @@ int BaseMessage::getHopCount() const
 void BaseMessage::setHopCount(int hopCount)
 {
     this->hopCount = hopCount;
+}
+
+stringVector& BaseMessage::getHops()
+{
+    return this->hops;
+}
+
+void BaseMessage::setHops(const stringVector& hops)
+{
+    this->hops = hops;
 }
 
 class BaseMessageDescriptor : public omnetpp::cClassDescriptor
@@ -320,7 +333,7 @@ const char *BaseMessageDescriptor::getProperty(const char *propertyname) const
 int BaseMessageDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 3+basedesc->getFieldCount() : 3;
+    return basedesc ? 4+basedesc->getFieldCount() : 4;
 }
 
 unsigned int BaseMessageDescriptor::getFieldTypeFlags(int field) const
@@ -335,8 +348,9 @@ unsigned int BaseMessageDescriptor::getFieldTypeFlags(int field) const
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISCOMPOUND,
     };
-    return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
 }
 
 const char *BaseMessageDescriptor::getFieldName(int field) const
@@ -351,8 +365,9 @@ const char *BaseMessageDescriptor::getFieldName(int field) const
         "destination",
         "messageType",
         "hopCount",
+        "hops",
     };
-    return (field>=0 && field<3) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<4) ? fieldNames[field] : nullptr;
 }
 
 int BaseMessageDescriptor::findField(const char *fieldName) const
@@ -362,6 +377,7 @@ int BaseMessageDescriptor::findField(const char *fieldName) const
     if (fieldName[0]=='d' && strcmp(fieldName, "destination")==0) return base+0;
     if (fieldName[0]=='m' && strcmp(fieldName, "messageType")==0) return base+1;
     if (fieldName[0]=='h' && strcmp(fieldName, "hopCount")==0) return base+2;
+    if (fieldName[0]=='h' && strcmp(fieldName, "hops")==0) return base+3;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -377,8 +393,9 @@ const char *BaseMessageDescriptor::getFieldTypeString(int field) const
         "string",
         "int",
         "int",
+        "stringVector",
     };
-    return (field>=0 && field<3) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<4) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **BaseMessageDescriptor::getFieldPropertyNames(int field) const
@@ -448,6 +465,7 @@ std::string BaseMessageDescriptor::getFieldValueAsString(void *object, int field
         case 0: return oppstring2string(pp->getDestination());
         case 1: return long2string(pp->getMessageType());
         case 2: return long2string(pp->getHopCount());
+        case 3: {std::stringstream out; out << pp->getHops(); return out.str();}
         default: return "";
     }
 }
@@ -478,6 +496,7 @@ const char *BaseMessageDescriptor::getFieldStructName(int field) const
         field -= basedesc->getFieldCount();
     }
     switch (field) {
+        case 3: return omnetpp::opp_typename(typeid(stringVector));
         default: return nullptr;
     };
 }
@@ -492,6 +511,7 @@ void *BaseMessageDescriptor::getFieldStructValuePointer(void *object, int field,
     }
     BaseMessage *pp = (BaseMessage *)object; (void)pp;
     switch (field) {
+        case 3: return (void *)(&pp->getHops()); break;
         default: return nullptr;
     }
 }

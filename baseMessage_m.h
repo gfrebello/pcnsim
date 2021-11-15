@@ -19,11 +19,18 @@
 
 
 // cplusplus {{
+    #include <vector>
     #include "messages.h"
+
+	inline std::ostream & operator << (std::ostream & os, const std::string & s) {
+        std::operator<<(os, s);        
+        return os;
+	}
+	typedef std::vector<std::string> stringVector;
 // }}
 
 /**
- * Class generated from <tt>baseMessage.msg:4</tt> by nedtool.
+ * Class generated from <tt>baseMessage.msg:14</tt> by nedtool.
  * <pre>
  * packet BaseMessage
  * {
@@ -31,6 +38,7 @@
  *     int messageType;
  *     //int hops[20];
  *     int hopCount;
+ *     stringVector hops;
  * }
  * </pre>
  */
@@ -40,6 +48,7 @@ class BaseMessage : public ::omnetpp::cPacket
     ::omnetpp::opp_string destination;
     int messageType;
     int hopCount;
+    stringVector hops;
 
   private:
     void copy(const BaseMessage& other);
@@ -64,6 +73,9 @@ class BaseMessage : public ::omnetpp::cPacket
     virtual void setMessageType(int messageType);
     virtual int getHopCount() const;
     virtual void setHopCount(int hopCount);
+    virtual stringVector& getHops();
+    virtual const stringVector& getHops() const {return const_cast<BaseMessage*>(this)->getHops();}
+    virtual void setHops(const stringVector& hops);
 };
 
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const BaseMessage& obj) {obj.parsimPack(b);}

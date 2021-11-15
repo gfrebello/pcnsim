@@ -1,9 +1,20 @@
 cplusplus{{
+    #include <vector>
     #include "messages.h"
+
+	inline std::ostream & operator << (std::ostream & os, const std::string & s) {
+        std::operator<<(os, s);        
+        return os;
+	}
+	typedef std::vector<std::string> stringVector;
 }};
+
+class noncobject stringVector;
+
 packet BaseMessage {
     string destination;
     int messageType;
     //int hops[20];
     int hopCount;
+    stringVector hops;
 }

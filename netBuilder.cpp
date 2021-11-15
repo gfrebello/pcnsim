@@ -52,6 +52,7 @@ void NetBuilder::initWorkload() {
     std::map<int, cMessage*> paymentList;
     std::string line;
     std::ifstream workloadFile(par("workloadFile").stringValue(), std::ifstream::in);
+    pendingPayments.clear();
 
     EV << "Initializing workload from file: " << par("topologyFile").stringValue() << "\n";
 

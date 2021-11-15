@@ -181,7 +181,7 @@ Register_Class(UpdateAddHTLC)
 
 UpdateAddHTLC::UpdateAddHTLC(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
-    this->amount = 0;
+    this->value = 0;
 }
 
 UpdateAddHTLC::UpdateAddHTLC(const UpdateAddHTLC& other) : ::omnetpp::cPacket(other)
@@ -205,7 +205,7 @@ void UpdateAddHTLC::copy(const UpdateAddHTLC& other)
 {
     this->source = other.source;
     this->paymentHash = other.paymentHash;
-    this->amount = other.amount;
+    this->value = other.value;
 }
 
 void UpdateAddHTLC::parsimPack(omnetpp::cCommBuffer *b) const
@@ -213,7 +213,7 @@ void UpdateAddHTLC::parsimPack(omnetpp::cCommBuffer *b) const
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->source);
     doParsimPacking(b,this->paymentHash);
-    doParsimPacking(b,this->amount);
+    doParsimPacking(b,this->value);
 }
 
 void UpdateAddHTLC::parsimUnpack(omnetpp::cCommBuffer *b)
@@ -221,7 +221,7 @@ void UpdateAddHTLC::parsimUnpack(omnetpp::cCommBuffer *b)
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->source);
     doParsimUnpacking(b,this->paymentHash);
-    doParsimUnpacking(b,this->amount);
+    doParsimUnpacking(b,this->value);
 }
 
 const char * UpdateAddHTLC::getSource() const
@@ -244,14 +244,14 @@ void UpdateAddHTLC::setPaymentHash(const char * paymentHash)
     this->paymentHash = paymentHash;
 }
 
-double UpdateAddHTLC::getAmount() const
+double UpdateAddHTLC::getValue() const
 {
-    return this->amount;
+    return this->value;
 }
 
-void UpdateAddHTLC::setAmount(double amount)
+void UpdateAddHTLC::setValue(double value)
 {
-    this->amount = amount;
+    this->value = value;
 }
 
 class UpdateAddHTLCDescriptor : public omnetpp::cClassDescriptor
@@ -349,7 +349,7 @@ const char *UpdateAddHTLCDescriptor::getFieldName(int field) const
     static const char *fieldNames[] = {
         "source",
         "paymentHash",
-        "amount",
+        "value",
     };
     return (field>=0 && field<3) ? fieldNames[field] : nullptr;
 }
@@ -360,7 +360,7 @@ int UpdateAddHTLCDescriptor::findField(const char *fieldName) const
     int base = basedesc ? basedesc->getFieldCount() : 0;
     if (fieldName[0]=='s' && strcmp(fieldName, "source")==0) return base+0;
     if (fieldName[0]=='p' && strcmp(fieldName, "paymentHash")==0) return base+1;
-    if (fieldName[0]=='a' && strcmp(fieldName, "amount")==0) return base+2;
+    if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+2;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -446,7 +446,7 @@ std::string UpdateAddHTLCDescriptor::getFieldValueAsString(void *object, int fie
     switch (field) {
         case 0: return oppstring2string(pp->getSource());
         case 1: return oppstring2string(pp->getPaymentHash());
-        case 2: return double2string(pp->getAmount());
+        case 2: return double2string(pp->getValue());
         default: return "";
     }
 }
@@ -463,7 +463,7 @@ bool UpdateAddHTLCDescriptor::setFieldValueAsString(void *object, int field, int
     switch (field) {
         case 0: pp->setSource((value)); return true;
         case 1: pp->setPaymentHash((value)); return true;
-        case 2: pp->setAmount(string2double(value)); return true;
+        case 2: pp->setValue(string2double(value)); return true;
         default: return false;
     }
 }

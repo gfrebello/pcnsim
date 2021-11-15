@@ -7,5 +7,5 @@ packet UpdateAddHTLC {
     string source;
     string paymentHash;
     //simtime_t timeout; 
-    double amount;
+    double value;
 }

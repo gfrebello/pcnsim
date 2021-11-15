@@ -221,6 +221,26 @@ void FullNode::handleMessage(cMessage *msg) {
             printPath += "\n";
             EV << printPath;
 
+            //Creating HTLC
+            EV << "Creating HTLC to kick off the payment process \n";
+            BaseMessage *newMessage = new BaseMessage();
+            newMessage->setDestination(dstName.c_str());
+            newMessage->setMessageType(UPDATE_ADD_HTLC);
+            newMessage->setHopCount(0);
+            newMessage->setHops(path);
+
+            UpdateAddHTLC *firstHTLC = new UpdateAddHTLC();
+            firstHTLC->setSource(srcName.c_str());
+            firstHTLC->setPaymentHash(invMsg->getPaymentHash());
+            firstHTLC->setValue(invMsg->getValue());
+
+            newMessage->encapsulate(firstHTLC);
+            int gateIndex;
+            gateIndex = rtable[path[newMessage->getHopCount() + 1]];
+
+            EV << "Sending HTLC to" + path[(newMessage->getHopCount()) + 1] + "through gate" + std::to_string(gateIndex) + "\n";
+            send(newMessage,"out", gateIndex);
+
             break;
         }
         case UPDATE_ADD_HTLC:
@@ -468,21 +488,21 @@ void FullNode::refreshDisplay() const {
 //BaseMessage* FullNode::handleInvoice (BaseMessage *ttmsg, cModule *sender){
 //    Invoice *invoice = check_and_cast<Invoice *> (ttmsg->getEncapsulatedPacket());
 //
-//    double amount = invoice->getAmount();
+//    double value = invoice->getValue();
 //    std::string paymentHash;
 //    paymentHash.assign(invoice->getPaymentHash());
 //
-//    //add path finding function here
 //
 //    updateAddHTLC *first_htlc = new updateAddHTLC();
 //    first_htlc->setSource(getName());
 //    first_htlc->setPaymentHash(paymentHash.c_str());
-//    first_htlc->setAmount(amount);
+//    first_htlc->setValue(value);
 //
 //    BaseMessage *newMessage = new BaseMessage();
-//    newMessage->setDestination(ttmsg->getSource());
+//    newMessage->setDestination(sender->getName());
 //    newMessage->setHopCount(0);
 //    newMessage->setMessageType(UPDATE_ADD_HTLC);
+//    newMessage->setHops();
 //
 //    newMessage.encapsulate(first_htlc);
 //    return newMessage;
