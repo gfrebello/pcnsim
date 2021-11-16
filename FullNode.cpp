@@ -198,6 +198,7 @@ void FullNode::handleMessage(cMessage *msg) {
             baseMsg->encapsulate(invMsg);
             send(baseMsg, myGate);
 
+
             // Close ephemeral connection
             myGate->disconnect();
             break;
@@ -213,6 +214,7 @@ void FullNode::handleMessage(cMessage *msg) {
 
             // Find route to destination
             std::vector<std::string> path = this->dijkstraWeightedShortestPath(srcName, dstName, adjMatrix);
+            std::string firstHop = path[1];
 
             // Print route
             std::string printPath = "Full route to destination: ";
@@ -234,18 +236,89 @@ void FullNode::handleMessage(cMessage *msg) {
             firstHTLC->setPaymentHash(invMsg->getPaymentHash());
             firstHTLC->setValue(invMsg->getValue());
 
+            //Decreasing channel capacity
+            _paymentChannels[firstHop].decreaseCapacity(invMsg->getValue());
+
             newMessage->encapsulate(firstHTLC);
             int gateIndex;
             gateIndex = rtable[path[newMessage->getHopCount() + 1]];
 
-            EV << "Sending HTLC to" + path[(newMessage->getHopCount()) + 1] + "through gate" + std::to_string(gateIndex) + "\n";
+            //Sending HTLC out
+            EV << "Sending HTLC to " + path[(newMessage->getHopCount()) + 1] + "through gate " + std::to_string(gateIndex) + "with payment hash " + firstHTLC->getPaymentHash() + "\n";
             send(newMessage,"out", gateIndex);
 
             break;
         }
-        case UPDATE_ADD_HTLC:
+        case UPDATE_ADD_HTLC: {
+            UpdateAddHTLC *HTLCMsg = check_and_cast<UpdateAddHTLC *> (baseMsg->decapsulate());
             EV << "UPDATE_ADD_HTLC received.\n";
+
+            //node checks whether it is the destination
+            std::string dstName = baseMsg->getDestination();
+            std::string srcName = getName();
+
+            //Geting the path of the message
+            std::vector<std::string> path = baseMsg->getHops();
+
+            if (dstName == this->getName()){
+                EV << "Payment reached its destination. Releasing pre image \n";
+
+                //Getting the stored pre image
+                std::string preImage = _myPreImages[HTLCMsg->getPaymentHash()];
+
+                //Generating a fulfill htlc message
+                BaseMessage *fulfillMsg = new BaseMessage();
+                fulfillMsg->setDestination(path[0].c_str());
+                fulfillMsg->setMessageType(UPDATE_FULFILL_HTLC);
+                fulfillMsg->setHopCount(baseMsg->getHopCount() - 1);
+                fulfillMsg->setHops(path);
+
+                UpdateFulfillHTLC *fulfillHTLC = new UpdateFulfillHTLC();
+                fulfillHTLC->setPaymentHash(HTLCMsg->getPaymentHash());
+                fulfillHTLC->setPreImage(preImage.c_str());
+
+                _paymentChannels[path[baseMsg->getHopCount()]].increaseCapacity(HTLCMsg->getValue());
+
+                fulfillMsg->encapsulate(fulfillHTLC);
+                int gateIndex;
+                gateIndex = rtable[path[fulfillMsg->getHopCount()]];
+
+                //Sending HTLC out
+                EV << "Sending pre image " + preImage + " to " + path[(fulfillMsg->getHopCount())] + "through gate " + std::to_string(gateIndex) + "for payment hash " + HTLCMsg->getPaymentHash() + "\n";
+                send(fulfillMsg,"out", gateIndex);
+
+                break;
+            }
+
+
+            std::string nextHop = path[baseMsg->getHopCount() + 2];
+
+            //Creating HTLC
+            EV << "Creating HTLC to kick off the payment process \n";
+            BaseMessage *newMessage = new BaseMessage();
+            newMessage->setDestination(dstName.c_str());
+            newMessage->setMessageType(UPDATE_ADD_HTLC);
+            newMessage->setHopCount(baseMsg->getHopCount() + 1);
+            newMessage->setHops(path);
+
+            UpdateAddHTLC *HTLC = new UpdateAddHTLC();
+            HTLC->setSource(srcName.c_str());
+            HTLC->setPaymentHash(HTLCMsg->getPaymentHash());
+            HTLC->setValue(HTLCMsg->getValue());
+
+            //Decreasing channel capacity
+            _paymentChannels[nextHop].decreaseCapacity(HTLCMsg->getValue());
+
+            newMessage->encapsulate(HTLC);
+            int gateIndex;
+            gateIndex = rtable[path[newMessage->getHopCount() + 1]];
+
+            //Sending HTLC out
+            EV << "Sending HTLC to " + path[(newMessage->getHopCount()) + 1] + "through gate " + std::to_string(gateIndex) + "with payment hash " + HTLC->getPaymentHash() + "\n";
+            send(newMessage,"out", gateIndex);
+
             break;
+        }
         case UPDATE_FAIL_HTLC:
             EV << "UPDATE_FAIL_HTLC received.\n";
             break;
