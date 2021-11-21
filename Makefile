@@ -40,9 +40,11 @@ OBJS = \
     $O/netBuilder.o \
     $O/PaymentChannel.o \
     $O/baseMessage_m.o \
+    $O/commitmentSigned_m.o \
     $O/failHTLC_m.o \
     $O/invoice_m.o \
     $O/payment_m.o \
+    $O/revokeAndAck_m.o \
     $O/routeReply_m.o \
     $O/routeReq_m.o \
     $O/updateAddHTLC_m.o \
@@ -51,9 +53,11 @@ OBJS = \
 # Message files
 MSGFILES = \
     baseMessage.msg \
+    commitmentSigned.msg \
     failHTLC.msg \
     invoice.msg \
     payment.msg \
+    revokeAndAck.msg \
     routeReply.msg \
     routeReq.msg \
     updateAddHTLC.msg \

@@ -7,6 +7,8 @@
 #include "payment_m.h"
 #include "PaymentChannel.h"
 #include "invoice_m.h"
+#include "commitmentSigned_m.h"
+#include "revokeAndAck_m.h"
 
 class FullNode : public cSimpleModule {
 
@@ -15,13 +17,12 @@ class FullNode : public cSimpleModule {
         virtual void handleMessage(cMessage *msg) override;
         virtual void forwardMessage(BaseMessage *baseMsg);
         virtual void refreshDisplay() const;
-//        virtual int getDestinationGate (int destination);
 
         // Routing functions
         virtual std::vector<std::string> getPath(std::map<std::string, std::string> parents, std::string target);
         virtual std::string minDistanceNode (std::map<std::string, double> distances, std::map<std::string, bool> visited);
         virtual std::vector<std::string> dijkstraWeightedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph);
-
+        virtual bool tryCommitTxOrFail(std::string, bool);
 
         std::map<std::string, std::string> _myPreImages; // paymentHash to preImage
         std::map<std::string, std::string> _myInFlights; // paymentHash to nodeName (who owes me)
@@ -44,6 +45,7 @@ class FullNode : public cSimpleModule {
         std::map<std::string, PaymentChannel> _paymentChannels;
         std::map<std::string, int> _signals;
         cTopology *_localTopology;
+        int localCommitCounter;
 
         Json::Value paymentChannelstoJson();
         void printPaymentChannels();
@@ -83,6 +85,7 @@ void FullNode::initialize() {
 
     // Get name (id) and initialize local topology based on the global topology created by netBuilder
     _localTopology = globalTopology;
+    this->localCommitCounter = 0;
     myName = getName();
     std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t>>> localPendingPayments = pendingPayments;
 
@@ -236,8 +239,11 @@ void FullNode::handleMessage(cMessage *msg) {
             firstHTLC->setPaymentHash(invMsg->getPaymentHash());
             firstHTLC->setValue(invMsg->getValue());
 
+            _paymentChannels[firstHop].setPendingHTLC(invMsg->getPaymentHash(), firstHTLC);
+            _paymentChannels[firstHop].setPendingHTLCFIFO(invMsg->getPaymentHash());
+
             //Decreasing channel capacity
-            _paymentChannels[firstHop].decreaseCapacity(invMsg->getValue());
+            //_paymentChannels[firstHop].decreaseCapacity(invMsg->getValue());
 
             newMessage->encapsulate(firstHTLC);
             int gateIndex;
@@ -250,75 +256,103 @@ void FullNode::handleMessage(cMessage *msg) {
             break;
         }
         case UPDATE_ADD_HTLC: {
-            UpdateAddHTLC *HTLCMsg = check_and_cast<UpdateAddHTLC *> (baseMsg->decapsulate());
-            EV << "UPDATE_ADD_HTLC received.\n";
 
-            //node checks whether it is the destination
-            std::string dstName = baseMsg->getDestination();
+            EV << "UPDATE_ADD_HTLC received.\n";
             std::string srcName = getName();
 
-            //Geting the path of the message
-            std::vector<std::string> path = baseMsg->getHops();
-
-            if (dstName == this->getName()){
-                EV << "Payment reached its destination. Releasing pre image \n";
-
-                //Getting the stored pre image
-                std::string preImage = _myPreImages[HTLCMsg->getPaymentHash()];
-
-                //Generating a fulfill htlc message
-                BaseMessage *fulfillMsg = new BaseMessage();
-                fulfillMsg->setDestination(path[0].c_str());
-                fulfillMsg->setMessageType(UPDATE_FULFILL_HTLC);
-                fulfillMsg->setHopCount(baseMsg->getHopCount() - 1);
-                fulfillMsg->setHops(path);
-
-                UpdateFulfillHTLC *fulfillHTLC = new UpdateFulfillHTLC();
-                fulfillHTLC->setPaymentHash(HTLCMsg->getPaymentHash());
-                fulfillHTLC->setPreImage(preImage.c_str());
-
-                _paymentChannels[path[baseMsg->getHopCount()]].increaseCapacity(HTLCMsg->getValue());
+            if (!baseMsg->isSelfMessage()){
+                //node checks whether if it is the destination
+                UpdateAddHTLC *HTLCMsg = check_and_cast<UpdateAddHTLC *> (baseMsg->decapsulate());
+                std::string dstName = baseMsg->getDestination();
 
 
-                fulfillMsg->encapsulate(fulfillHTLC);
+                //Geting the path of the message
+                std::vector<std::string> path = baseMsg->getHops();
+
+                std::string sender = baseMsg->getSenderModule()->getName();
+                EV << "Storing HTLC from node " + sender + " as pending.\n";
+
+                _paymentChannels[sender].setPendingHTLC(HTLCMsg->getPaymentHash(), HTLCMsg);
+                _paymentChannels[sender].setPendingHTLCFIFO(HTLCMsg->getPaymentHash());
+
+                if (dstName == this->getName()){
+                    EV << "Payment reached its destination. Releasing pre image \n";
+
+                    //Getting the stored pre image
+                    //std::string preImage = _myPreImages[HTLCMsg->getPaymentHash()];
+
+                    //Generating a fulfill htlc message
+                    //BaseMessage *fulfillMsg = new BaseMessage();
+                    //fulfillMsg->setDestination(path[0].c_str());
+                    //fulfillMsg->setMessageType(UPDATE_ADD_HTLC);
+                    //fulfillMsg->setHopCount(baseMsg->getHopCount() + 1);
+                    //fulfillMsg->setHops(path);
+
+                    //UpdateFulfillHTLC *fulfillHTLC = new UpdateFulfillHTLC();
+                    //fulfillHTLC->setPaymentHash(HTLCMsg->getPaymentHash());
+                    //fulfillHTLC->setPreImage(preImage.c_str());
+
+                    //_paymentChannels[path[baseMsg->getHopCount()]].increaseCapacity(HTLCMsg->getValue());
+
+
+                    //fulfillMsg->encapsulate(fulfillHTLC);
+                    //int gateIndex;
+                    //gateIndex = rtable[path[fulfillMsg->getHopCount()]];
+
+                    //Sending HTLC out
+                    //EV << "Sending pre image " + preImage + " to " + path[(fulfillMsg->getHopCount())] + " through gate " + std::to_string(gateIndex) + "for payment hash " + HTLCMsg->getPaymentHash() + "\n";
+                    //send(fulfillMsg,"out", gateIndex);
+                    if (!tryCommitTxOrFail(sender, false)){
+                        EV << "Setting timeout for node " + srcName + "\n";
+                        scheduleAt((simTime() + SimTime(500,SIMTIME_MS)),baseMsg);
+                    }
+
+                    break;
+                }
+
+
+                std::string nextHop = path[baseMsg->getHopCount() + 2];
+                std::string previousHop = path[baseMsg->getHopCount()];
+
+                //Creating HTLC
+                EV << "Creating HTLC to kick off the payment process \n";
+                BaseMessage *newMessage = new BaseMessage();
+                newMessage->setDestination(dstName.c_str());
+                newMessage->setMessageType(UPDATE_ADD_HTLC);
+                newMessage->setHopCount(baseMsg->getHopCount() + 1);
+                newMessage->setHops(path);
+                //newMessage->setUpstreamDirection(true);
+
+                UpdateAddHTLC *HTLC = new UpdateAddHTLC();
+                HTLC->setSource(srcName.c_str());
+                HTLC->setPaymentHash(HTLCMsg->getPaymentHash());
+                HTLC->setValue(HTLCMsg->getValue());
+
+                //Decreasing channel capacity and storing in flight
+                _paymentChannels[nextHop].setPendingHTLC(HTLC->getPaymentHash(),HTLC);
+                _paymentChannels[nextHop].setPendingHTLCFIFO(HTLC->getPaymentHash());
+                //_paymentChannels[previousHop].setInFlight(HTLCMsg->getPaymentHash(),HTLCMsg->getValue());
+
+                newMessage->encapsulate(HTLC);
                 int gateIndex;
-                gateIndex = rtable[path[fulfillMsg->getHopCount()]];
+                gateIndex = rtable[path[newMessage->getHopCount() + 1]];
 
                 //Sending HTLC out
-                EV << "Sending pre image " + preImage + " to " + path[(fulfillMsg->getHopCount())] + " through gate " + std::to_string(gateIndex) + "for payment hash " + HTLCMsg->getPaymentHash() + "\n";
-                send(fulfillMsg,"out", gateIndex);
+                EV << "Sending HTLC to " + path[(newMessage->getHopCount()) + 1] + " through gate " + std::to_string(gateIndex) + " with payment hash " + HTLC->getPaymentHash() + "\n";
+                send(newMessage,"out", gateIndex);
 
-                break;
+                if (!tryCommitTxOrFail(sender, false)){
+                    EV << "Setting timeout for node " + srcName + "\n";
+                    scheduleAt((simTime() + SimTime(500,SIMTIME_MS)),baseMsg);
+                }
+            }else{
+                EV << srcName + " timeout expired. Creating commit\n";
+                std::vector<std::string> path = baseMsg->getHops();
+                std::string previousHop = path[baseMsg->getHopCount()];
+
+                tryCommitTxOrFail(previousHop, true);
+
             }
-
-
-            std::string nextHop = path[baseMsg->getHopCount() + 2];
-            std::string previousHop = path[baseMsg->getHopCount()];
-
-            //Creating HTLC
-            EV << "Creating HTLC to kick off the payment process \n";
-            BaseMessage *newMessage = new BaseMessage();
-            newMessage->setDestination(dstName.c_str());
-            newMessage->setMessageType(UPDATE_ADD_HTLC);
-            newMessage->setHopCount(baseMsg->getHopCount() + 1);
-            newMessage->setHops(path);
-
-            UpdateAddHTLC *HTLC = new UpdateAddHTLC();
-            HTLC->setSource(srcName.c_str());
-            HTLC->setPaymentHash(HTLCMsg->getPaymentHash());
-            HTLC->setValue(HTLCMsg->getValue());
-
-            //Decreasing channel capacity and storing in flight
-            _paymentChannels[nextHop].decreaseCapacity(HTLCMsg->getValue());
-            _paymentChannels[previousHop].setInFlight(HTLCMsg->getPaymentHash(),HTLCMsg->getValue());
-
-            newMessage->encapsulate(HTLC);
-            int gateIndex;
-            gateIndex = rtable[path[newMessage->getHopCount() + 1]];
-
-            //Sending HTLC out
-            EV << "Sending HTLC to " + path[(newMessage->getHopCount()) + 1] + " through gate " + std::to_string(gateIndex) + " with payment hash " + HTLC->getPaymentHash() + "\n";
-            send(newMessage,"out", gateIndex);
 
             break;
         }
@@ -341,6 +375,7 @@ void FullNode::handleMessage(cMessage *msg) {
                 EV << "Payment successfully achieved\n";
                 break;
             }
+
 
             //Passing pre image across HTLC chain
             BaseMessage *newMessage = new BaseMessage();
@@ -370,12 +405,66 @@ void FullNode::handleMessage(cMessage *msg) {
 
             break;
         }
-        case REVOKE_AND_ACK:
+        case REVOKE_AND_ACK:{
             EV << "REVOKE_AND_ACK received.\n";
+            revokeAndAck *ackMsg = check_and_cast<revokeAndAck *> (baseMsg->decapsulate());
+
+            int ackId = ackMsg->getId();
+            std::vector<UpdateAddHTLC *> HTLCs = _paymentChannels[baseMsg->getSenderModule()->getName()].getHTLCsWaitingForAck(ackId);
+            //std::vector<UpdateAddHTLC *> HTLCs = sentCommitTx->getHTLCs();
+            UpdateAddHTLC *HTLCIterator;
+
+            for (int index = 0; index < HTLCs.size(); index++){
+                HTLCIterator = HTLCs[index];
+                _paymentChannels[baseMsg->getSenderModule()->getName()].removePendingHTLC(HTLCIterator->getPaymentHash());
+                _paymentChannels[baseMsg->getSenderModule()->getName()].removePendingHTLCFIFO();
+
+            }
+            _paymentChannels[baseMsg->getSenderModule()->getName()].removeHTLCsWaitingForAck(ackId);
+
             break;
-        case COMMITMENT_SIGNED:
+        }
+        case COMMITMENT_SIGNED:{
             EV << "COMMITMENT_SIGNED received.\n";
+            commitmentSigned *commitMsg = check_and_cast<commitmentSigned *>(baseMsg->decapsulate());
+
+            UpdateAddHTLC *HTLCIterator = NULL;
+            std::string paymentHashIterator;
+            unsigned short index = 0;
+            std::vector<UpdateAddHTLC *> HTLCs = commitMsg->getHTLCs();
+            size_t numberHTLCs = HTLCs.size();
+            std::string sender = baseMsg->getSenderModule()->getName();
+
+            for (index = 0; index < numberHTLCs; index++){
+                HTLCIterator = HTLCs[index];
+                paymentHashIterator = HTLCIterator->getPaymentHash();
+                if (!_paymentChannels[sender].getPendingHTLC(paymentHashIterator)){
+                    EV << "Error. Unknown updateAddHTLC received\n";
+                    break;
+                }
+
+                _paymentChannels[sender].setInFlight(paymentHashIterator, HTLCIterator->getValue());
+                _paymentChannels[sender].decreaseCapacity(HTLCIterator->getValue());
+            }
+
+            revokeAndAck *ack = new revokeAndAck();
+            ack->setAckId(commitMsg->getId());
+
+            BaseMessage *newMsg = new BaseMessage();
+            newMsg->setDestination(sender.c_str());
+            newMsg->setMessageType(REVOKE_AND_ACK);
+            newMsg->setHopCount(0);
+            //newMsg->setUpstreamDirection(!baseMsg->getUpstreamDirection());
+
+            newMsg->encapsulate(ack);
+            int gateIndex;
+            gateIndex =  rtable[sender];
+            //Sending pre image out
+            EV << "Sending ack to " + sender + "through gate " + std::to_string(gateIndex) + "with id " + std::to_string(commitMsg->getId()) + "\n";
+            send(newMsg,"out", gateIndex);
+
             break;
+        }
     }
 
 }
@@ -476,6 +565,57 @@ void FullNode::refreshDisplay() const {
         strcat(pcText,buf);
     }
     getDisplayString().setTagArg("t", 0, pcText);
+}
+
+/***********************************************************************************************************************/
+/* tryCommitOrFail verifies whether the pending transactions queue has reached the defined commitment batch size       */
+/* or not. If the batch is full, tryCommitOrFail creates a commitment_signed message and sends it to the node that     */
+/* shares the payment channel where the batch is full. If the batch has not yet reached its limit, tryCommitOrFail     */
+/* does nothing.                                                                                                       */
+/***********************************************************************************************************************/
+bool FullNode::tryCommitTxOrFail(std::string sender, bool timeoutFlag) {
+    unsigned short int index = 0;
+    UpdateAddHTLC *htlc = NULL;
+    std::vector<UpdateAddHTLC *> HTLCVector;
+    std::string paymentHashIterator;
+    bool through = false;
+
+    EV << "Entered tryCommitTxOrFail. Current batch size: " + std::to_string(_paymentChannels[sender].getPendingBatchSize()) + "\n";
+
+    if (_paymentChannels[sender].getPendingBatchSize() >= COMMITMENT_BATCH_SIZE || timeoutFlag == true){
+        for (index = 0; index < (_paymentChannels[sender].getPendingBatchSize()); index++){
+            paymentHashIterator.assign(_paymentChannels[sender].getPendingHTLCFIFO());
+            htlc = _paymentChannels[sender].getPendingHTLC(paymentHashIterator);
+            //_paymentChannels[sender].removePendingHTLC(paymentHashIterator);
+            //_paymentChannels[sender].removePendingHTLCFIFO();
+            HTLCVector.push_back(htlc);
+        }
+
+        EV << "Setting through to true\n";
+        through = true;
+
+        commitmentSigned *commitTx = new commitmentSigned();
+        commitTx->setHTLCs(HTLCVector);
+        commitTx->setId(localCommitCounter);
+
+        _paymentChannels[sender].setHTLCsWaitingForAck(localCommitCounter, HTLCVector);
+
+        localCommitCounter = localCommitCounter + 1;
+        int gateIndex = rtable[sender];
+
+        BaseMessage *baseMsg = new BaseMessage();
+        baseMsg->setDestination(sender.c_str());
+        baseMsg->setMessageType(COMMITMENT_SIGNED);
+        baseMsg->setHopCount(0);
+
+
+        baseMsg->encapsulate(commitTx);
+
+        EV << "Sending Commitment Signed. Valor de localCommitCounter: " + std::to_string(localCommitCounter) + "\n";
+
+        send (baseMsg,"out", gateIndex);
+    }
+    return through;
 }
 
 

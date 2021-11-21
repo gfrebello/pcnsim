@@ -14,7 +14,7 @@ class noncobject stringVector;
 packet BaseMessage {
     string destination;
     int messageType;
-    //int hops[20];
     int hopCount;
     stringVector hops;
+    //bool upstreamDirection;
 }

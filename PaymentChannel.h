@@ -1,6 +1,11 @@
-#include "globals.h"
 #include <stdio.h>
 #include <omnetpp.h>
+#include <vector>
+#include <queue>
+
+#include "globals.h"
+#include "updateAddHTLC_m.h"
+#include "commitmentSigned_m.h"
 
 using namespace omnetpp;
 
@@ -17,6 +22,9 @@ class PaymentChannel {
         int _numHTLCs;
         double _channelReserveSatoshis;
         std::map<std::string, double> _inFlights;
+        std::map<std::string, UpdateAddHTLC *> _pendingHTLCs; //paymentHash to HTLC
+        std::queue<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added
+        std::map<int, std::vector<UpdateAddHTLC *>> _HTLCsWaitingForAck;
 
         cGate *_gate;
 
@@ -49,6 +57,16 @@ class PaymentChannel {
          virtual void setInFlight (std::string paymentHash, double amount) { this->_inFlights[paymentHash] = amount; };
          virtual double getInFlight (std::string paymentHash) { return this->_inFlights[paymentHash]; };
          virtual void removeInFlight (std::string paymentHash) { this->_inFlights.erase(paymentHash); };
+         virtual void setPendingHTLC (std::string paymentHash, UpdateAddHTLC *htlc) { this->_pendingHTLCs[paymentHash] = htlc; };
+         virtual UpdateAddHTLC* getPendingHTLC (std::string paymentHash) { return this->_pendingHTLCs[paymentHash]; };
+         virtual void removePendingHTLC (std::string paymentHash) { this->_pendingHTLCs.erase(paymentHash); };
+         virtual void setPendingHTLCFIFO (std::string paymentHash) { this->_pendingHTLCsFIFO.push(paymentHash); };
+         virtual std::string getPendingHTLCFIFO () { return _pendingHTLCsFIFO.front(); };
+         virtual void removePendingHTLCFIFO () { this->_pendingHTLCsFIFO.pop(); };
+         virtual size_t getPendingBatchSize () { return this->_pendingHTLCsFIFO.size(); };
+         virtual std::vector<UpdateAddHTLC *> getHTLCsWaitingForAck (int id) { return this->_HTLCsWaitingForAck[id]; };
+         virtual void setHTLCsWaitingForAck (int id, std::vector<UpdateAddHTLC *> vector) { this->_HTLCsWaitingForAck[id] = vector;};
+         virtual void removeHTLCsWaitingForAck (int id) { this->_HTLCsWaitingForAck.erase(id); };
          virtual cGate* getGate() const { return this->_gate; };
          virtual void setGate(cGate* gate) { this->_gate = gate; };
 

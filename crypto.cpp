@@ -39,7 +39,7 @@ string generatePreImage() {
 
     string preImage;
     preImage.reserve(PREIMAGE_SIZE);
-    std::uniform_int_distribution<int> random_number(0, sizeof(charset) - 1);
+    std::uniform_int_distribution<int> random_number(0, strlen(charset) - 1);
 
     for( int i = 0; i < PREIMAGE_SIZE; i++ ) {
         preImage.push_back(charset[random_number(gen)]);

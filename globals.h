@@ -12,7 +12,9 @@
 
 using namespace omnetpp;
 
+//setting some macros
 #define PREIMAGE_SIZE 32
+#define COMMITMENT_BATCH_SIZE 10
 
 extern cTopology *globalTopology;
 extern std::map<std::string, std::vector<std::tuple<std::string, double, simtime_t> > > pendingPayments;
