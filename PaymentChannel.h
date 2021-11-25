@@ -24,7 +24,8 @@ class PaymentChannel {
         std::map<std::string, double> _inFlights;
         std::map<std::string, UpdateAddHTLC *> _pendingHTLCs; //paymentHash to HTLC
         std::queue<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added
-        std::map<int, std::vector<UpdateAddHTLC *>> _HTLCsWaitingForAck;
+        std::map<int, std::vector<UpdateAddHTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
+        std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
 
         cGate *_gate;
 
@@ -67,6 +68,9 @@ class PaymentChannel {
          virtual std::vector<UpdateAddHTLC *> getHTLCsWaitingForAck (int id) { return this->_HTLCsWaitingForAck[id]; };
          virtual void setHTLCsWaitingForAck (int id, std::vector<UpdateAddHTLC *> vector) { this->_HTLCsWaitingForAck[id] = vector;};
          virtual void removeHTLCsWaitingForAck (int id) { this->_HTLCsWaitingForAck.erase(id); };
+         virtual void setPreviousHop (std::string paymentHash, std::string previousHop) { this->_previousHop[paymentHash] = previousHop; };
+         virtual std::string getPreviousHop (std::string paymentHash) { return this->_previousHop[paymentHash]; };
+         virtual void removePreviousHop (std::string paymentHash) { this->_previousHop.erase(paymentHash); };
          virtual cGate* getGate() const { return this->_gate; };
          virtual void setGate(cGate* gate) { this->_gate = gate; };
 
