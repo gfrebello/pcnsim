@@ -257,7 +257,7 @@ void FullNode::handleMessage(cMessage *msg) {
         }
         case UPDATE_ADD_HTLC: {
 
-            EV << "UPDATE_ADD_HTLC received.\n";
+            EV << "UPDATE_ADD_HTLC receivedat " + std::string(getName()) + " from " + std::string(baseMsg->getSenderModule()->getName()) + ".\n";
             std::string srcName = getName();
 
             if (!baseMsg->isSelfMessage()){
@@ -406,30 +406,40 @@ void FullNode::handleMessage(cMessage *msg) {
             break;
         }
         case REVOKE_AND_ACK:{
-            EV << "REVOKE_AND_ACK received.\n";
+            EV << "REVOKE_AND_ACK received at " + std::string(getName()) + " from " + std::string(baseMsg->getSenderModule()->getName()) + ".\n";
             revokeAndAck *ackMsg = check_and_cast<revokeAndAck *> (baseMsg->decapsulate());
 
-            int ackId = ackMsg->getId();
+            int ackId = ackMsg->getAckId();
             std::vector<UpdateAddHTLC *> HTLCs = _paymentChannels[baseMsg->getSenderModule()->getName()].getHTLCsWaitingForAck(ackId);
             //std::vector<UpdateAddHTLC *> HTLCs = sentCommitTx->getHTLCs();
             UpdateAddHTLC *HTLCIterator;
+            std::string paymentHashIterator;
+            int index2 = 0;
+            int index = 0;
+            int batchSize = _paymentChannels[baseMsg->getSenderModule()->getName()].getPendingBatchSize();
 
-            for (int index = 0; index < HTLCs.size(); index++){
+            for (index = 0; index < HTLCs.size(); index++){
                 HTLCIterator = HTLCs[index];
                 _paymentChannels[baseMsg->getSenderModule()->getName()].removePendingHTLC(HTLCIterator->getPaymentHash());
-                _paymentChannels[baseMsg->getSenderModule()->getName()].removePendingHTLCFIFO();
-
+                for (index2 = 0; index2 < batchSize; index2++){
+                    paymentHashIterator.assign(_paymentChannels[baseMsg->getSenderModule()->getName()].getPendingHTLCFIFO());
+                    _paymentChannels[baseMsg->getSenderModule()->getName()].removePendingHTLCFIFO();
+                    if (paymentHashIterator != HTLCIterator->getPaymentHash()){
+                        _paymentChannels[baseMsg->getSenderModule()->getName()].setPendingHTLCFIFO(paymentHashIterator);
+                    }
+                }
             }
             _paymentChannels[baseMsg->getSenderModule()->getName()].removeHTLCsWaitingForAck(ackId);
 
             break;
         }
         case COMMITMENT_SIGNED:{
-            EV << "COMMITMENT_SIGNED received.\n";
+            EV << "COMMITMENT_SIGNED received at " + std::string(getName()) + " from " + std::string(baseMsg->getSenderModule()->getName()) + ".\n";
             commitmentSigned *commitMsg = check_and_cast<commitmentSigned *>(baseMsg->decapsulate());
 
             UpdateAddHTLC *HTLCIterator = NULL;
             std::string paymentHashIterator;
+            std::string paymentHashIterator2;
             unsigned short index = 0;
             std::vector<UpdateAddHTLC *> HTLCs = commitMsg->getHTLCs();
             size_t numberHTLCs = HTLCs.size();
@@ -443,8 +453,18 @@ void FullNode::handleMessage(cMessage *msg) {
                     break;
                 }
 
+                EV << "Decreasing " + std::to_string(HTLCIterator->getValue()) + "at node " + getName() + "for payment hash " + HTLCIterator->getPaymentHash() + "\n";
+
                 _paymentChannels[sender].setInFlight(paymentHashIterator, HTLCIterator->getValue());
                 _paymentChannels[sender].decreaseCapacity(HTLCIterator->getValue());
+                _paymentChannels[sender].removePendingHTLC(HTLCIterator->getPaymentHash());
+                for (int index2 = 0; index < _paymentChannels[sender].getPendingBatchSize(); index2++){
+                    paymentHashIterator2.assign(_paymentChannels[sender].getPendingHTLCFIFO());
+                    _paymentChannels[sender].removePendingHTLCFIFO();
+                    if (paymentHashIterator2 != HTLCIterator->getPaymentHash()){
+                        _paymentChannels[sender].setPendingHTLCFIFO(paymentHashIterator);
+                    }
+                }
             }
 
             revokeAndAck *ack = new revokeAndAck();
@@ -587,8 +607,10 @@ bool FullNode::tryCommitTxOrFail(std::string sender, bool timeoutFlag) {
             paymentHashIterator.assign(_paymentChannels[sender].getPendingHTLCFIFO());
             htlc = _paymentChannels[sender].getPendingHTLC(paymentHashIterator);
             //_paymentChannels[sender].removePendingHTLC(paymentHashIterator);
-            //_paymentChannels[sender].removePendingHTLCFIFO();
+            _paymentChannels[sender].removePendingHTLCFIFO();
+            _paymentChannels[sender].setPendingHTLCFIFO(paymentHashIterator);
             HTLCVector.push_back(htlc);
+
         }
 
         EV << "Setting through to true\n";
@@ -611,7 +633,7 @@ bool FullNode::tryCommitTxOrFail(std::string sender, bool timeoutFlag) {
 
         baseMsg->encapsulate(commitTx);
 
-        EV << "Sending Commitment Signed. Valor de localCommitCounter: " + std::to_string(localCommitCounter) + "\n";
+        EV << "Sending Commitment Signed from node " + std::string(getName()) + "to " + sender + ". localCommitCounter: " + std::to_string(localCommitCounter) + "\n";
 
         send (baseMsg,"out", gateIndex);
     }
