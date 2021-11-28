@@ -1,6 +1,6 @@
 #include "PaymentChannel.h"
 
-PaymentChannel::PaymentChannel(double capacity, double fee, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate *gate) {
+PaymentChannel::PaymentChannel(double capacity, double fee, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate *localGate, cGate *neighborGate) {
     this->_capacity = capacity;
     this->_fee = fee;
     this->_quality = quality;
@@ -8,7 +8,8 @@ PaymentChannel::PaymentChannel(double capacity, double fee, double quality, int 
     this->_HTLCMinimumMsat = HTLCMinimumMsat;
     this->_numHTLCs = numHTLCs;
     this->_channelReserveSatoshis = channelReserveSatoshis;
-    this->_gate = gate;
+    this->_localGate = localGate;
+    this->_neighborGate = neighborGate;
 }
 
 
@@ -20,17 +21,17 @@ PaymentChannel::PaymentChannel(double capacity, double fee, double quality, int 
 //    this->_gate = gate;
 //}
 
-
-PaymentChannel::PaymentChannel(cGate *gate) {
-    this->_capacity = 10;
-    this->_fee = 0;
-    this->_quality = 1;
-    this->_maxAcceptedHTLCs = 5;
-    this->_HTLCMinimumMsat = 0.1;
-    this->_numHTLCs = 0;
-    this->_channelReserveSatoshis = 0.1;
-    this->_gate = gate;
-}
+//
+//PaymentChannel::PaymentChannel(cGate *gate) {
+//    this->_capacity = 10;
+//    this->_fee = 0;
+//    this->_quality = 1;
+//    this->_maxAcceptedHTLCs = 5;
+//    this->_HTLCMinimumMsat = 0.1;
+//    this->_numHTLCs = 0;
+//    this->_channelReserveSatoshis = 0.1;
+//    this->_gate = gate;
+//}
 
 
 void PaymentChannel::copy(const PaymentChannel& other) {
@@ -41,7 +42,8 @@ void PaymentChannel::copy(const PaymentChannel& other) {
     this->_HTLCMinimumMsat = other._HTLCMinimumMsat;
     this->_numHTLCs = other._numHTLCs;
     this->_channelReserveSatoshis = other._channelReserveSatoshis;
-    this->_gate = other._gate;
+    this->_localGate = other._localGate;
+    this->_neighborGate = other._neighborGate;
 }
 
 

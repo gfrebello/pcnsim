@@ -94,7 +94,7 @@ void FullNode::initialize() {
     // Initialize payment channels
     for (auto& neighborToPCs : nameToPCs[myName]) {
         std::string neighborName = neighborToPCs.first;
-        std::tuple<double, double, double, int, double, double, cGate*> pcTuple = neighborToPCs.second;
+        std::tuple<double, double, double, int, double, double, cGate*, cGate*> pcTuple = neighborToPCs.second;
         double capacity = std::get<0>(pcTuple);
         double fee = std::get<1>(pcTuple);
         double quality = std::get<2>(pcTuple);
@@ -102,10 +102,10 @@ void FullNode::initialize() {
         int numHTLCs = 0;
         double HTLCMinimumMsat = std::get<4>(pcTuple);
         double channelReserveSatoshis = std::get<5>(pcTuple);
-        cGate* neighborGate = std::get<6>(pcTuple);
+        cGate* localGate = std::get<6>(pcTuple);
+        cGate* neighborGate = std::get<7>(pcTuple);
 
-
-        PaymentChannel pc = PaymentChannel(capacity, fee, quality, maxAcceptedHTLCs, numHTLCs, HTLCMinimumMsat, channelReserveSatoshis, neighborGate);
+        PaymentChannel pc = PaymentChannel(capacity, fee, quality, maxAcceptedHTLCs, numHTLCs, HTLCMinimumMsat, channelReserveSatoshis, localGate, neighborGate);
         _paymentChannels[neighborName] = pc;
 
         // Register signals and statistics
@@ -642,16 +642,18 @@ void FullNode::forwardMessage(BaseMessage *baseMsg) {
 
 void FullNode::refreshDisplay() const {
 
-    char pcText[100];
-    sprintf(pcText, " ");
     for(auto& it : _paymentChannels) {
-        char buf[100];
+        char buf[30];
         std::string neighborName = it.first;
+        std::string neighborPath = "PCN." + neighborName;
+        cModule* neighborMod = getModuleByPath(neighborPath.c_str());
         float capacity = it.second.getCapacity();
-        sprintf(buf, "%s: %0.1f,\n ", neighborName.c_str(), capacity);
-        strcat(pcText,buf);
+        cGate *gate = it.second.getLocalGate();
+        cChannel *channel = gate->getChannel();
+        sprintf(buf, "%0.1f\n", capacity);
+        channel->getDisplayString().setTagArg("t", 0, buf);
+        channel->getDisplayString().setTagArg("t", 1, "l");
     }
-    getDisplayString().setTagArg("t", 0, pcText);
 }
 
 /***********************************************************************************************************************/

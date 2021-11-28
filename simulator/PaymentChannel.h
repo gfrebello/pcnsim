@@ -27,14 +27,14 @@ class PaymentChannel {
         std::map<int, std::vector<UpdateAddHTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
         std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
 
-        cGate *_gate;
+        cGate *_localGate;
+        cGate *_neighborGate;
 
         // Constructors for polymorphism
         PaymentChannel() {};
         PaymentChannel(cGate *gate);
         //PaymentChannel(double capacity, double fee, double quality, cGate *gate);
-        PaymentChannel(double capacity, double balance, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate *gate);
-
+        PaymentChannel(double capacity, double balance, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate* localGate, cGate *neighborGate);
 
         // Getters and setters
          virtual double getCapacity() const { return this->_capacity; };
@@ -71,8 +71,10 @@ class PaymentChannel {
          virtual void setPreviousHop (std::string paymentHash, std::string previousHop) { this->_previousHop[paymentHash] = previousHop; };
          virtual std::string getPreviousHop (std::string paymentHash) { return this->_previousHop[paymentHash]; };
          virtual void removePreviousHop (std::string paymentHash) { this->_previousHop.erase(paymentHash); };
-         virtual cGate* getGate() const { return this->_gate; };
-         virtual void setGate(cGate* gate) { this->_gate = gate; };
+         virtual cGate* getLocalGate() const { return this->_localGate; };
+         virtual void setLocalGate(cGate* gate) { this->_localGate = gate; };
+         virtual cGate* getNeighborGate() const { return this->_neighborGate; };
+         virtual void setNeighborGate(cGate* gate) { this->_neighborGate = gate; };
 
         // Auxiliary functions
         Json::Value toJson() const;

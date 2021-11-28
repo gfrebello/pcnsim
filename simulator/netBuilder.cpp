@@ -3,7 +3,7 @@
 
 cTopology *globalTopology = new cTopology("globalTopology");
 std::map< std::string, std::vector< std::tuple<std::string, double, simtime_t> > > pendingPayments;
-std::map< std::string, std::map<std::string, std::tuple<double, double, double, int, double, double, cGate*> > > nameToPCs;
+std::map< std::string, std::map<std::string, std::tuple<double, double, double, int, double, double, cGate*, cGate*> > > nameToPCs;
 std::map< std::string, std::vector< std::pair<std::string, double> > > adjMatrix;
 
 class NetBuilder : public cSimpleModule {
@@ -178,7 +178,7 @@ void NetBuilder::buildNetwork(cModule *parent) {
         linksBuffer.push_back(linkTuple);
 
         //Initialize payment channels and add nodes to adjacency matrix
-        auto pc = std::make_tuple(capacity, fee, linkQuality, maxAcceptedHTLCs, HTLCMinimumMsat, channelReserveSatoshis, dstIn);
+        auto pc = std::make_tuple(capacity, fee, linkQuality, maxAcceptedHTLCs, HTLCMinimumMsat, channelReserveSatoshis, srcOut, dstIn);
         nameToPCs[srcName][dstName] = pc;
         adjMatrix[srcName].push_back(std::make_pair(dstName,weight));
 
