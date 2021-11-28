@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by nedtool 5.7 from baseMessage.msg.
+// Generated file, do not edit! Created by nedtool 5.7 from simulator/baseMessage.msg.
 //
 
 #ifndef __BASEMESSAGE_M_H
@@ -30,7 +30,7 @@
 // }}
 
 /**
- * Class generated from <tt>baseMessage.msg:14</tt> by nedtool.
+ * Class generated from <tt>simulator/baseMessage.msg:14</tt> by nedtool.
  * <pre>
  * packet BaseMessage
  * {
@@ -40,7 +40,6 @@
  *     stringVector hops;
  *     //bool upstreamDirection;
  *     string displayString = "b=0,0,rect,o=white,white,0	";
- *     //string displayString \@override;
  * }
  * </pre>
  */

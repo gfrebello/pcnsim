@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by nedtool 5.7 from updateFulfillHTLC.msg.
+// Generated file, do not edit! Created by nedtool 5.7 from simulator/updateFulfillHTLC.msg.
 //
 
 #ifndef __UPDATEFULFILLHTLC_M_H
@@ -24,13 +24,12 @@
 // }}
 
 /**
- * Class generated from <tt>updateFulfillHTLC.msg:6</tt> by nedtool.
+ * Class generated from <tt>simulator/updateFulfillHTLC.msg:6</tt> by nedtool.
  * <pre>
  * packet UpdateFulfillHTLC
  * {
  *     string paymentHash;
  *     string preImage;
- *     string displayString = "b=15,15,rect,white,kind,5";
  * }
  * </pre>
  */
@@ -39,7 +38,6 @@ class UpdateFulfillHTLC : public ::omnetpp::cPacket
   protected:
     ::omnetpp::opp_string paymentHash;
     ::omnetpp::opp_string preImage;
-    ::omnetpp::opp_string displayString;
 
   private:
     void copy(const UpdateFulfillHTLC& other);
@@ -62,8 +60,6 @@ class UpdateFulfillHTLC : public ::omnetpp::cPacket
     virtual void setPaymentHash(const char * paymentHash);
     virtual const char * getPreImage() const;
     virtual void setPreImage(const char * preImage);
-    virtual const char * getDisplayString() const;
-    virtual void setDisplayString(const char * displayString);
 };
 
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const UpdateFulfillHTLC& obj) {obj.parsimPack(b);}

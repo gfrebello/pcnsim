@@ -235,6 +235,7 @@ void FullNode::handleMessage(cMessage *msg) {
             newMessage->setMessageType(UPDATE_ADD_HTLC);
             newMessage->setHopCount(1);
             newMessage->setHops(path);
+            newMessage->setName("INVOICE");
 
             UpdateAddHTLC *firstHTLC = new UpdateAddHTLC();
             firstHTLC->setSource(srcName.c_str());
@@ -367,6 +368,7 @@ void FullNode::handleMessage(cMessage *msg) {
         case UPDATE_FAIL_HTLC:
             EV << "UPDATE_FAIL_HTLC received.\n";
             break;
+
         case UPDATE_FULFILL_HTLC:{
             UpdateFulfillHTLC *fulfillHTLC = check_and_cast<UpdateFulfillHTLC *>(baseMsg->decapsulate());
             EV << "UPDATE_FULFILL_HTLC received at " + std::string(getName()) + " from " + std::string(baseMsg->getSenderModule()->getName()) + ".\n";
@@ -420,7 +422,7 @@ void FullNode::handleMessage(cMessage *msg) {
 
             break;
         }
-        case REVOKE_AND_ACK:{
+        case REVOKE_AND_ACK: {
             EV << "REVOKE_AND_ACK received at " + std::string(getName()) + " from " + std::string(baseMsg->getSenderModule()->getName()) + ".\n";
             revokeAndAck *ackMsg = check_and_cast<revokeAndAck *> (baseMsg->decapsulate());
 
@@ -534,18 +536,19 @@ void FullNode::handleMessage(cMessage *msg) {
             revokeAndAck *ack = new revokeAndAck();
             ack->setAckId(commitMsg->getId());
 
-            BaseMessage *newMsg = new BaseMessage();
-            newMsg->setDestination(sender.c_str());
-            newMsg->setMessageType(REVOKE_AND_ACK);
-            newMsg->setHopCount(0);
-            //newMsg->setUpstreamDirection(!baseMsg->getUpstreamDirection());
+            BaseMessage *newMessage = new BaseMessage();
+            newMessage->setDestination(sender.c_str());
+            newMessage->setMessageType(REVOKE_AND_ACK);
+            newMessage->setHopCount(0);
+            newMessage->setName("REVOKE_AND_ACK");
+            //newMessage->setUpstreamDirection(!baseMsg->getUpstreamDirection());
 
-            newMsg->encapsulate(ack);
+            newMessage->encapsulate(ack);
             int gateIndex;
             gateIndex =  rtable[sender];
             //Sending pre image out
             EV << "Sending ack to " + sender + "through gate " + std::to_string(gateIndex) + "with id " + std::to_string(commitMsg->getId()) + "\n";
-            send(newMsg,"out", gateIndex);
+            send(newMessage,"out", gateIndex);
 
             break;
         }
@@ -693,6 +696,7 @@ bool FullNode::tryCommitTxOrFail(std::string sender, bool timeoutFlag) {
         baseMsg->setDestination(sender.c_str());
         baseMsg->setMessageType(COMMITMENT_SIGNED);
         baseMsg->setHopCount(0);
+        baseMsg->setName("COMMITMENT_SIGNED");
 
 
         baseMsg->encapsulate(commitTx);

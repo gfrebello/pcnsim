@@ -1,5 +1,5 @@
 #
-# OMNeT++/OMNEST Makefile for simulator
+# OMNeT++/OMNEST Makefile for wpcn-omnet
 #
 # This file was generated with the command:
 #  opp_makemake -f --deep -O out -I. -lcrypto -ljsoncpp
@@ -7,7 +7,7 @@
 
 # Name of target to be created (-o option)
 TARGET_DIR = .
-TARGET_NAME = simulator$(D)
+TARGET_NAME = wpcn-omnet$(D)
 TARGET = $(TARGET_NAME)$(EXE_SUFFIX)
 TARGET_IMPLIB = $(TARGET_NAME)$(IMPLIB_SUFFIX)
 TARGET_IMPDEF = $(TARGET_NAME)$(IMPDEF_SUFFIX)
@@ -35,33 +35,33 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cpp, .msg and .sm files
 OBJS = \
-    $O/crypto.o \
-    $O/FullNode.o \
-    $O/netBuilder.o \
-    $O/PaymentChannel.o \
-    $O/baseMessage_m.o \
-    $O/commitmentSigned_m.o \
-    $O/failHTLC_m.o \
-    $O/invoice_m.o \
-    $O/payment_m.o \
-    $O/revokeAndAck_m.o \
-    $O/routeReply_m.o \
-    $O/routeReq_m.o \
-    $O/updateAddHTLC_m.o \
-    $O/updateFulfillHTLC_m.o
+    $O/simulator/crypto.o \
+    $O/simulator/FullNode.o \
+    $O/simulator/netBuilder.o \
+    $O/simulator/PaymentChannel.o \
+    $O/simulator/baseMessage_m.o \
+    $O/simulator/commitmentSigned_m.o \
+    $O/simulator/failHTLC_m.o \
+    $O/simulator/invoice_m.o \
+    $O/simulator/payment_m.o \
+    $O/simulator/revokeAndAck_m.o \
+    $O/simulator/routeReply_m.o \
+    $O/simulator/routeReq_m.o \
+    $O/simulator/updateAddHTLC_m.o \
+    $O/simulator/updateFulfillHTLC_m.o
 
 # Message files
 MSGFILES = \
-    baseMessage.msg \
-    commitmentSigned.msg \
-    failHTLC.msg \
-    invoice.msg \
-    payment.msg \
-    revokeAndAck.msg \
-    routeReply.msg \
-    routeReq.msg \
-    updateAddHTLC.msg \
-    updateFulfillHTLC.msg
+    simulator/baseMessage.msg \
+    simulator/commitmentSigned.msg \
+    simulator/failHTLC.msg \
+    simulator/invoice.msg \
+    simulator/payment.msg \
+    simulator/revokeAndAck.msg \
+    simulator/routeReply.msg \
+    simulator/routeReq.msg \
+    simulator/updateAddHTLC.msg \
+    simulator/updateFulfillHTLC.msg
 
 # SM files
 SMFILES =

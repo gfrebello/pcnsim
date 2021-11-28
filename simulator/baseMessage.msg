@@ -18,5 +18,4 @@ packet BaseMessage {
     stringVector hops;
     //bool upstreamDirection;
      string displayString = "b=0,0,rect,o=white,white,0	";
-    //string displayString @override;
 }
