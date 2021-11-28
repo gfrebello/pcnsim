@@ -112,25 +112,19 @@ void NetBuilder::buildNetwork(cModule *parent) {
 
         // Check whether all fields are present
         std::vector<std::string> tokens = cStringTokenizer(line.c_str()).asVector();
-        if (tokens.size() != 15)
-            throw cRuntimeError("wrong line in topology file: 15 items required, line: \"%s\"", line.c_str());
+        if (tokens.size() != 9)
+            throw cRuntimeError("wrong line in topology file: 9 items required, line: \"%s\"", line.c_str());
 
         // Get fields from tokens
         int srcId = atoi(tokens[0].c_str());
         int dstId = atoi(tokens[1].c_str());
-        double srcCapacity = atof(tokens[2].c_str());
-        double dstCapacity = atof(tokens[3].c_str());
-        double srcFee = atof(tokens[4].c_str());
-        double dstFee = atof(tokens[5].c_str());
-        double linkQualitySrcToDst = atof(tokens[6].c_str());
-        double linkQualityDstToSrc = atof(tokens[7].c_str());
-        int srcMaxAcceptedHTLCs = atoi(tokens[8].c_str());
-        int dstMaxAcceptedHTLCs = atoi(tokens[9].c_str());
-        double srcHTLCMinimumMsat = atof(tokens[10].c_str());
-        double dstHTLCMinimumMsat = atof(tokens[11].c_str());
-        double srcChannelReserveSatoshis = atof(tokens[12].c_str());
-        double dstChannelReserveSatoshis = atof(tokens[13].c_str());
-        double linkDelay = atof(tokens[14].c_str());
+        double capacity = atof(tokens[2].c_str());
+        double fee = atof(tokens[3].c_str());
+        double linkQuality = atof(tokens[4].c_str());
+        int maxAcceptedHTLCs = atoi(tokens[5].c_str());
+        double HTLCMinimumMsat = atof(tokens[6].c_str());
+        double channelReserveSatoshis = atof(tokens[7].c_str());
+        double linkDelay = atof(tokens[8].c_str());
 
         // Print found edges
         EV << "EDGE FOUND: (" << srcId << ", " << dstId << "); linkDelay = " << linkDelay << "ms. Processing...\n";
@@ -170,34 +164,24 @@ void NetBuilder::buildNetwork(cModule *parent) {
         }
 
         // Connect modules
-        cGate *srcIn, *srcOut, *dstIn, *dstOut;
-        srcIn = srcMod->getOrCreateFirstUnconnectedGate("in", 0, false, true);
+        cGate *srcOut, *dstIn;
         srcOut = srcMod->getOrCreateFirstUnconnectedGate("out", 0, false, true);
         dstIn = dstMod->getOrCreateFirstUnconnectedGate("in", 0, false, true);
-        dstOut = dstMod->getOrCreateFirstUnconnectedGate("out", 0, false, true);
         connect(srcOut, dstIn, linkDelay);
-        connect(dstOut, srcIn, linkDelay);
 
         // Define link weights
-        double srcToDstWeight = srcCapacity;
-        double dstToSrcWeight = dstCapacity;
+        double weight = capacity;
 
-        // Add bidirectional link to links buffer (we use a buffer because
-        // we can`t safely add links before all modules are built)
-        cTopology::Link *srcToDstLink = new cTopology::Link(srcToDstWeight);
-        cTopology::Link *dstToSrcLink = new cTopology::Link(dstToSrcWeight);
-        auto linkTupleSrcToDst = std::make_tuple(srcToDstLink, srcOut, dstIn);
-        auto linkTupleDstToSrc = std::make_tuple(dstToSrcLink, dstOut, srcIn);
-        linksBuffer.push_back(linkTupleSrcToDst);
-        linksBuffer.push_back(linkTupleDstToSrc);
+        // Add link to links buffer (we use a buffer because we can`t safely add links before all modules are built)
+        cTopology::Link *link = new cTopology::Link(weight);
+        auto linkTuple = std::make_tuple(link, srcOut, dstIn);
+        linksBuffer.push_back(linkTuple);
 
         //Initialize payment channels and add nodes to adjacency matrix
-        auto pcSrcToDst = std::make_tuple(srcCapacity, srcFee, linkQualitySrcToDst, srcMaxAcceptedHTLCs, srcHTLCMinimumMsat, srcChannelReserveSatoshis, dstIn);
-        auto pcDstToSrc = std::make_tuple(dstCapacity, dstFee, linkQualityDstToSrc, dstMaxAcceptedHTLCs, dstHTLCMinimumMsat, dstChannelReserveSatoshis, srcIn);
-        nameToPCs[srcName][dstName] = pcSrcToDst;
-        nameToPCs[dstName][srcName] = pcDstToSrc;
-        adjMatrix[srcName].push_back(std::make_pair(dstName,srcToDstWeight));
-        adjMatrix[dstName].push_back(std::make_pair(srcName,dstToSrcWeight));
+        auto pc = std::make_tuple(capacity, fee, linkQuality, maxAcceptedHTLCs, HTLCMinimumMsat, channelReserveSatoshis, dstIn);
+        nameToPCs[srcName][dstName] = pc;
+        adjMatrix[srcName].push_back(std::make_pair(dstName,weight));
+
     }
 
     // Build modules

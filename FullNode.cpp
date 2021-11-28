@@ -148,7 +148,7 @@ void FullNode::initialize() {
              std::string srcName = std::get<0>(paymentTuple);
              double value = std::get<1>(paymentTuple);
              simtime_t time = std::get<2>(paymentTuple);
-             char msgname[32];
+             char msgname[100];
              sprintf(msgname, "%s-to-%s;value:%0.1f", srcName.c_str(), myName.c_str(), value);
 
              // Create payment message
@@ -233,7 +233,7 @@ void FullNode::handleMessage(cMessage *msg) {
             BaseMessage *newMessage = new BaseMessage();
             newMessage->setDestination(dstName.c_str());
             newMessage->setMessageType(UPDATE_ADD_HTLC);
-            newMessage->setHopCount(0);
+            newMessage->setHopCount(1);
             newMessage->setHops(path);
 
             UpdateAddHTLC *firstHTLC = new UpdateAddHTLC();
@@ -249,10 +249,10 @@ void FullNode::handleMessage(cMessage *msg) {
 
             newMessage->encapsulate(firstHTLC);
             int gateIndex;
-            gateIndex = rtable[path[newMessage->getHopCount() + 1]];
+            gateIndex = rtable[firstHop];
 
             //Sending HTLC out
-            EV << "Sending HTLC to " + path[(newMessage->getHopCount()) + 1] + " through gate " + std::to_string(gateIndex) + " with payment hash " + firstHTLC->getPaymentHash() + "\n";
+            EV << "Sending HTLC to " + firstHop + " through gate " + std::to_string(gateIndex) + " with payment hash " + firstHTLC->getPaymentHash() + "\n";
             send(newMessage,"out", gateIndex);
 
             break;
@@ -316,8 +316,8 @@ void FullNode::handleMessage(cMessage *msg) {
                 }
 
 
-                std::string nextHop = path[baseMsg->getHopCount() + 2];
-                std::string previousHop = path[baseMsg->getHopCount()];
+                std::string nextHop = path[baseMsg->getHopCount() + 1];
+                std::string previousHop = path[baseMsg->getHopCount()-1];
 
                 //Creating HTLC
                 EV << "Creating HTLC to kick off the payment process \n";
@@ -341,10 +341,10 @@ void FullNode::handleMessage(cMessage *msg) {
 
                 newMessage->encapsulate(HTLC);
                 int gateIndex;
-                gateIndex = rtable[path[newMessage->getHopCount() + 1]];
+                gateIndex = rtable[path[newMessage->getHopCount()]];
 
                 //Sending HTLC out
-                EV << "Sending HTLC to " + path[(newMessage->getHopCount()) + 1] + " through gate " + std::to_string(gateIndex) + " with payment hash " + HTLC->getPaymentHash() + "\n";
+                EV << "Sending HTLC to " + path[(newMessage->getHopCount())] + " through gate " + std::to_string(gateIndex) + " with payment hash " + HTLC->getPaymentHash() + "\n";
                 send(newMessage,"out", gateIndex);
 
                 if (!tryCommitTxOrFail(sender, false)){
@@ -354,7 +354,7 @@ void FullNode::handleMessage(cMessage *msg) {
             }else{
                 EV << srcName + " timeout expired. Creating commit\n";
                 std::vector<std::string> path = baseMsg->getHops();
-                std::string previousHop = path[baseMsg->getHopCount()];
+                std::string previousHop = path[baseMsg->getHopCount()-1];
                 std::string dstName = baseMsg->getDestination();
 
                 tryCommitTxOrFail(previousHop, true);
@@ -397,16 +397,21 @@ void FullNode::handleMessage(cMessage *msg) {
 
             //Updating channel capacity
             EV << "Increasing channel capacity\n";
-            std::string nextHop = path[baseMsg->getHopCount()-2];
+            EV << "Hop count: " + std::to_string(baseMsg->getHopCount()) + "\n";
+            std::string nextHop = path[baseMsg->getHopCount()-1];
             double value = _paymentChannels[nextHop].getInFlight(fulfillHTLC->getPaymentHash());
-            _paymentChannels[nextHop].increaseCapacity(value);
+            //_paymentChannels[nextHop].increaseCapacity(value);
+            updatePaymentChannel(nextHop, value, true);
             _paymentChannels[nextHop].removeInFlight(fulfillHTLC->getPaymentHash());
+            std::string myName = getName();
+            std::string signalName = myName +"-to-" + nextHop + ":capacity";
+            emit(_signals[signalName], _paymentChannels[nextHop]._capacity);
 
             newMessage->encapsulate(fulfillMsg);
             int gateIndex;
-            gateIndex =  rtable[path[baseMsg->getHopCount()-2]];
+            gateIndex =  rtable[path[baseMsg->getHopCount()-1]];
             //Sending pre image out
-            EV << "Sending pre image to " + path[(baseMsg->getHopCount())-2] + "through gate " + std::to_string(gateIndex) + "with payment hash " + fulfillHTLC->getPaymentHash() + "\n";
+            EV << "Sending pre image to " + path[(baseMsg->getHopCount())-1] + "through gate " + std::to_string(gateIndex) + "with payment hash " + fulfillHTLC->getPaymentHash() + "\n";
             send(newMessage,"out", gateIndex);
 
             break;
@@ -446,25 +451,28 @@ void FullNode::handleMessage(cMessage *msg) {
                     BaseMessage *fulfillMsg = new BaseMessage();
                     fulfillMsg->setDestination(path[0].c_str());
                     fulfillMsg->setMessageType(UPDATE_FULFILL_HTLC);
-                    fulfillMsg->setHopCount(storedBaseMsg->getHopCount() + 1);
+                    fulfillMsg->setHopCount(storedBaseMsg->getHopCount() - 1);
                     fulfillMsg->setHops(storedBaseMsg->getHops());
 
                     UpdateFulfillHTLC *fulfillHTLC = new UpdateFulfillHTLC();
                     fulfillHTLC->setPaymentHash(HTLCIterator->getPaymentHash());
                     fulfillHTLC->setPreImage(preImage.c_str());
 
-                    _paymentChannels[path[storedBaseMsg->getHopCount()]].increaseCapacity(HTLCIterator->getValue());
-
+                    //_paymentChannels[path[storedBaseMsg->getHopCount()]].increaseCapacity(HTLCIterator->getValue());
+                    updatePaymentChannel(path[storedBaseMsg->getHopCount()-1], HTLCIterator->getValue(), true);
+                    std::string myName = getName();
+                    std::string signalName = myName +"-to-" + path[storedBaseMsg->getHopCount()-1] + ":capacity";
+                    emit(_signals[signalName], _paymentChannels[path[storedBaseMsg->getHopCount()-1]]._capacity);
 
                     fulfillMsg->encapsulate(fulfillHTLC);
                     int gateIndex;
-                    gateIndex = rtable[path[storedBaseMsg->getHopCount()]];
+                    gateIndex = rtable[path[storedBaseMsg->getHopCount()-1]];
 
                     _myPreImages.erase(HTLCIterator->getPaymentHash());
                     _myTransactions.erase(HTLCIterator->getPaymentHash());
 
                     //Sending HTLC out
-                    EV << "Sending pre image " + preImage + " to " + path[(fulfillMsg->getHopCount())] + " through gate " + std::to_string(gateIndex) + "for payment hash " + HTLCIterator->getPaymentHash() + "\n";
+                    EV << "Sending pre image " + preImage + " to " + path[(fulfillMsg->getHopCount()-1)] + " through gate " + std::to_string(gateIndex) + "for payment hash " + HTLCIterator->getPaymentHash() + "\n";
                     send(fulfillMsg,"out", gateIndex);
 
                 }
@@ -497,7 +505,12 @@ void FullNode::handleMessage(cMessage *msg) {
                     EV << "Decreasing " + std::to_string(HTLCIterator->getValue()) + "at node " + getName() + "for payment hash " + HTLCIterator->getPaymentHash() + "\n";
 
                     _paymentChannels[sender].setInFlight(paymentHashIterator, HTLCIterator->getValue());
-                    _paymentChannels[sender].decreaseCapacity(HTLCIterator->getValue());
+                    //_paymentChannels[sender].decreaseCapacity(HTLCIterator->getValue());
+                    if (!updatePaymentChannel(sender, HTLCIterator->getValue(), false)) {
+                        bubble("Channel depleted. Failing payment... \n");
+                        EV << "Channel depleted. Failing payment... \n";
+                    }
+
                     _paymentChannels[sender].removePreviousHop(paymentHashIterator);
                 }
                 _paymentChannels[sender].removePendingHTLC(HTLCIterator->getPaymentHash());
@@ -509,6 +522,10 @@ void FullNode::handleMessage(cMessage *msg) {
                     }
                 }
             }
+
+            std::string myName = getName();
+            std::string signalName = myName +"-to-" + sender + ":capacity";
+            emit(_signals[signalName], _paymentChannels[sender]._capacity);
 
             revokeAndAck *ack = new revokeAndAck();
             ack->setAckId(commitMsg->getId());
@@ -621,7 +638,7 @@ void FullNode::refreshDisplay() const {
     char pcText[100];
     sprintf(pcText, " ");
     for(auto& it : _paymentChannels) {
-        char buf[20];
+        char buf[100];
         std::string neighborName = it.first;
         float capacity = it.second.getCapacity();
         sprintf(buf, "%s: %0.1f,\n ", neighborName.c_str(), capacity);
