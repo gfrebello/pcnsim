@@ -91,7 +91,7 @@ for node in graph.nodes():
     if (graph.out_degree(node)== 1):
         end_hosts.append(node)
 
-n_payments = 10
+n_payments = 1
 min_payment = 0.01
 max_payment = 1
 payment_list = []

@@ -7,4 +7,5 @@ simulator/wpcn_dbg
 simulator/wpcn-omnet*
 simulator/core
 simulator/General*
-
+bkp-config/
+.metadata/

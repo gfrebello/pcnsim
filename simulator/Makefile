@@ -48,6 +48,7 @@ OBJS = \
     $O/routeReply_m.o \
     $O/routeReq_m.o \
     $O/updateAddHTLC_m.o \
+    $O/updateFailHTLC_m.o \
     $O/updateFulfillHTLC_m.o
 
 # Message files
@@ -61,6 +62,7 @@ MSGFILES = \
     routeReply.msg \
     routeReq.msg \
     updateAddHTLC.msg \
+    updateFailHTLC.msg \
     updateFulfillHTLC.msg
 
 # SM files
