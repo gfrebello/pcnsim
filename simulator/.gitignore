@@ -1,0 +1,10 @@
+simulator/results/
+simulator/out/
+simulator/out/out/**/*.o.d
+simulator/wpcn
+simulator/wpcn_dbg
+simulator/wpcn-omnet*
+simulator/core
+simulator/General*
+**.o.d
+
