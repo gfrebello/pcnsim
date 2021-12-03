@@ -1,0 +1,7 @@
+19:51:28 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+Creating executable: out/gcc-release//simulator
+
+19:51:33 Build Finished. 0 errors, 0 warnings. (took 4s.930ms)
+

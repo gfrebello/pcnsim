@@ -20,9 +20,9 @@
 
 // cplusplus {{
     #include <vector>
-    #include "updateAddHTLC_m.h"
+    #include "HTLC.h"
     
-    typedef std::vector<UpdateAddHTLC *> HTLCVector;
+    typedef std::vector<HTLC *> HTLCVector;
 // }}
 
 /**

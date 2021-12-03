@@ -181,6 +181,7 @@ Register_Class(UpdateAddHTLC)
 
 UpdateAddHTLC::UpdateAddHTLC(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
+    this->timeout = 0;
     this->value = 0;
 }
 
@@ -205,6 +206,7 @@ void UpdateAddHTLC::copy(const UpdateAddHTLC& other)
 {
     this->source = other.source;
     this->paymentHash = other.paymentHash;
+    this->timeout = other.timeout;
     this->value = other.value;
 }
 
@@ -213,6 +215,7 @@ void UpdateAddHTLC::parsimPack(omnetpp::cCommBuffer *b) const
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->source);
     doParsimPacking(b,this->paymentHash);
+    doParsimPacking(b,this->timeout);
     doParsimPacking(b,this->value);
 }
 
@@ -221,6 +224,7 @@ void UpdateAddHTLC::parsimUnpack(omnetpp::cCommBuffer *b)
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->source);
     doParsimUnpacking(b,this->paymentHash);
+    doParsimUnpacking(b,this->timeout);
     doParsimUnpacking(b,this->value);
 }
 
@@ -242,6 +246,16 @@ const char * UpdateAddHTLC::getPaymentHash() const
 void UpdateAddHTLC::setPaymentHash(const char * paymentHash)
 {
     this->paymentHash = paymentHash;
+}
+
+::omnetpp::simtime_t UpdateAddHTLC::getTimeout() const
+{
+    return this->timeout;
+}
+
+void UpdateAddHTLC::setTimeout(::omnetpp::simtime_t timeout)
+{
+    this->timeout = timeout;
 }
 
 double UpdateAddHTLC::getValue() const
@@ -319,7 +333,7 @@ const char *UpdateAddHTLCDescriptor::getProperty(const char *propertyname) const
 int UpdateAddHTLCDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 3+basedesc->getFieldCount() : 3;
+    return basedesc ? 4+basedesc->getFieldCount() : 4;
 }
 
 unsigned int UpdateAddHTLCDescriptor::getFieldTypeFlags(int field) const
@@ -334,8 +348,9 @@ unsigned int UpdateAddHTLCDescriptor::getFieldTypeFlags(int field) const
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
 }
 
 const char *UpdateAddHTLCDescriptor::getFieldName(int field) const
@@ -349,9 +364,10 @@ const char *UpdateAddHTLCDescriptor::getFieldName(int field) const
     static const char *fieldNames[] = {
         "source",
         "paymentHash",
+        "timeout",
         "value",
     };
-    return (field>=0 && field<3) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<4) ? fieldNames[field] : nullptr;
 }
 
 int UpdateAddHTLCDescriptor::findField(const char *fieldName) const
@@ -360,7 +376,8 @@ int UpdateAddHTLCDescriptor::findField(const char *fieldName) const
     int base = basedesc ? basedesc->getFieldCount() : 0;
     if (fieldName[0]=='s' && strcmp(fieldName, "source")==0) return base+0;
     if (fieldName[0]=='p' && strcmp(fieldName, "paymentHash")==0) return base+1;
-    if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+2;
+    if (fieldName[0]=='t' && strcmp(fieldName, "timeout")==0) return base+2;
+    if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+3;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -375,9 +392,10 @@ const char *UpdateAddHTLCDescriptor::getFieldTypeString(int field) const
     static const char *fieldTypeStrings[] = {
         "string",
         "string",
+        "simtime_t",
         "double",
     };
-    return (field>=0 && field<3) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<4) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **UpdateAddHTLCDescriptor::getFieldPropertyNames(int field) const
@@ -446,7 +464,8 @@ std::string UpdateAddHTLCDescriptor::getFieldValueAsString(void *object, int fie
     switch (field) {
         case 0: return oppstring2string(pp->getSource());
         case 1: return oppstring2string(pp->getPaymentHash());
-        case 2: return double2string(pp->getValue());
+        case 2: return simtime2string(pp->getTimeout());
+        case 3: return double2string(pp->getValue());
         default: return "";
     }
 }
@@ -463,7 +482,8 @@ bool UpdateAddHTLCDescriptor::setFieldValueAsString(void *object, int field, int
     switch (field) {
         case 0: pp->setSource((value)); return true;
         case 1: pp->setPaymentHash((value)); return true;
-        case 2: pp->setValue(string2double(value)); return true;
+        case 2: pp->setTimeout(string2simtime(value)); return true;
+        case 3: pp->setValue(string2double(value)); return true;
         default: return false;
     }
 }

@@ -181,6 +181,7 @@ Register_Class(UpdateFulfillHTLC)
 
 UpdateFulfillHTLC::UpdateFulfillHTLC(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
+    this->value = 0;
 }
 
 UpdateFulfillHTLC::UpdateFulfillHTLC(const UpdateFulfillHTLC& other) : ::omnetpp::cPacket(other)
@@ -204,6 +205,7 @@ void UpdateFulfillHTLC::copy(const UpdateFulfillHTLC& other)
 {
     this->paymentHash = other.paymentHash;
     this->preImage = other.preImage;
+    this->value = other.value;
 }
 
 void UpdateFulfillHTLC::parsimPack(omnetpp::cCommBuffer *b) const
@@ -211,6 +213,7 @@ void UpdateFulfillHTLC::parsimPack(omnetpp::cCommBuffer *b) const
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->paymentHash);
     doParsimPacking(b,this->preImage);
+    doParsimPacking(b,this->value);
 }
 
 void UpdateFulfillHTLC::parsimUnpack(omnetpp::cCommBuffer *b)
@@ -218,6 +221,7 @@ void UpdateFulfillHTLC::parsimUnpack(omnetpp::cCommBuffer *b)
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->paymentHash);
     doParsimUnpacking(b,this->preImage);
+    doParsimUnpacking(b,this->value);
 }
 
 const char * UpdateFulfillHTLC::getPaymentHash() const
@@ -238,6 +242,16 @@ const char * UpdateFulfillHTLC::getPreImage() const
 void UpdateFulfillHTLC::setPreImage(const char * preImage)
 {
     this->preImage = preImage;
+}
+
+double UpdateFulfillHTLC::getValue() const
+{
+    return this->value;
+}
+
+void UpdateFulfillHTLC::setValue(double value)
+{
+    this->value = value;
 }
 
 class UpdateFulfillHTLCDescriptor : public omnetpp::cClassDescriptor
@@ -305,7 +319,7 @@ const char *UpdateFulfillHTLCDescriptor::getProperty(const char *propertyname) c
 int UpdateFulfillHTLCDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 2+basedesc->getFieldCount() : 2;
+    return basedesc ? 3+basedesc->getFieldCount() : 3;
 }
 
 unsigned int UpdateFulfillHTLCDescriptor::getFieldTypeFlags(int field) const
@@ -319,8 +333,9 @@ unsigned int UpdateFulfillHTLCDescriptor::getFieldTypeFlags(int field) const
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<2) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
 }
 
 const char *UpdateFulfillHTLCDescriptor::getFieldName(int field) const
@@ -334,8 +349,9 @@ const char *UpdateFulfillHTLCDescriptor::getFieldName(int field) const
     static const char *fieldNames[] = {
         "paymentHash",
         "preImage",
+        "value",
     };
-    return (field>=0 && field<2) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<3) ? fieldNames[field] : nullptr;
 }
 
 int UpdateFulfillHTLCDescriptor::findField(const char *fieldName) const
@@ -344,6 +360,7 @@ int UpdateFulfillHTLCDescriptor::findField(const char *fieldName) const
     int base = basedesc ? basedesc->getFieldCount() : 0;
     if (fieldName[0]=='p' && strcmp(fieldName, "paymentHash")==0) return base+0;
     if (fieldName[0]=='p' && strcmp(fieldName, "preImage")==0) return base+1;
+    if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+2;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -358,8 +375,9 @@ const char *UpdateFulfillHTLCDescriptor::getFieldTypeString(int field) const
     static const char *fieldTypeStrings[] = {
         "string",
         "string",
+        "double",
     };
-    return (field>=0 && field<2) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<3) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **UpdateFulfillHTLCDescriptor::getFieldPropertyNames(int field) const
@@ -428,6 +446,7 @@ std::string UpdateFulfillHTLCDescriptor::getFieldValueAsString(void *object, int
     switch (field) {
         case 0: return oppstring2string(pp->getPaymentHash());
         case 1: return oppstring2string(pp->getPreImage());
+        case 2: return double2string(pp->getValue());
         default: return "";
     }
 }
@@ -444,6 +463,7 @@ bool UpdateFulfillHTLCDescriptor::setFieldValueAsString(void *object, int field,
     switch (field) {
         case 0: pp->setPaymentHash((value)); return true;
         case 1: pp->setPreImage((value)); return true;
+        case 2: pp->setValue(string2double(value)); return true;
         default: return false;
     }
 }

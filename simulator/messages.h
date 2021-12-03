@@ -8,9 +8,9 @@
 #define COMMITMENT_SIGNED   132
 #define REVOKE_AND_ACK      133
 
-//Invoice type not defined in BOLTs
+//Other type not defined in BOLTs
 #define INVOICE             100
-
+#define HTLC_REFUSED        101
 
 //Other types of messages
 #define TRANSACTION_INIT 0

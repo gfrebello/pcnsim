@@ -6,4 +6,5 @@ cplusplus {{
 packet UpdateFulfillHTLC {
     string paymentHash;
     string preImage;
+    double value;
 }

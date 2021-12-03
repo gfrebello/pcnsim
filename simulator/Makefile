@@ -37,11 +37,11 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 OBJS = \
     $O/crypto.o \
     $O/FullNode.o \
+    $O/HTLC.o \
     $O/netBuilder.o \
-    $O/PaymentChannel.o \
     $O/baseMessage_m.o \
     $O/commitmentSigned_m.o \
-    $O/failHTLC_m.o \
+    $O/HTLCRefused_m.o \
     $O/invoice_m.o \
     $O/payment_m.o \
     $O/revokeAndAck_m.o \
@@ -55,7 +55,7 @@ OBJS = \
 MSGFILES = \
     baseMessage.msg \
     commitmentSigned.msg \
-    failHTLC.msg \
+    HTLCRefused.msg \
     invoice.msg \
     payment.msg \
     revokeAndAck.msg \

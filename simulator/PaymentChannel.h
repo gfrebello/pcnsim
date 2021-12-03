@@ -2,10 +2,9 @@
 #include <omnetpp.h>
 #include <vector>
 #include <queue>
-
-#include "globals.h"
-#include "updateAddHTLC_m.h"
-#include "commitmentSigned_m.h"
+#include <algorithm>
+#include <jsoncpp/json/value.h>
+#include "HTLC.h"
 
 using namespace omnetpp;
 
@@ -21,19 +20,34 @@ class PaymentChannel {
         double _HTLCMinimumMsat;
         int _numHTLCs;
         double _channelReserveSatoshis;
+<<<<<<< Updated upstream:PaymentChannel.h
         std::map<std::string, double> _inFlights;
         std::map<std::string, UpdateAddHTLC *> _pendingHTLCs; //paymentHash to HTLC
         std::queue<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added
         std::map<int, std::vector<UpdateAddHTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
         std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
 
+=======
+        std::map<std::string, HTLC *> _inFlights; //paymentHash to value
+        std::map<std::string, HTLC *> _pendingHTLCs; //paymentHash to pending HTLC
+        std::deque<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added to the pending list
+        std::map<int, std::vector<HTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
+        std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
+>>>>>>> Stashed changes:simulator/PaymentChannel.h
         cGate *_localGate;
         cGate *_neighborGate;
 
         // Constructors for polymorphism
         PaymentChannel() {};
+<<<<<<< Updated upstream:simulator/PaymentChannel.h
         PaymentChannel(cGate *gate);
+=======
+<<<<<<< Updated upstream:PaymentChannel.h
+        //PaymentChannel(cGate *gate);
+>>>>>>> Stashed changes:PaymentChannel.h
         //PaymentChannel(double capacity, double fee, double quality, cGate *gate);
+=======
+>>>>>>> Stashed changes:simulator/PaymentChannel.h
         PaymentChannel(double capacity, double balance, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate* localGate, cGate *neighborGate);
 
         // Getters and setters
@@ -55,18 +69,25 @@ class PaymentChannel {
          virtual void decreasenumHTLCs () { this->_numHTLCs = _numHTLCs - 1; };
          virtual double getChannelReserveSatoshis () const { return this->_channelReserveSatoshis; };
          virtual void setChannelReserveSatothis (double channelReserveSatoshis) { this->_channelReserveSatoshis = channelReserveSatoshis; };
-         virtual void setInFlight (std::string paymentHash, double amount) { this->_inFlights[paymentHash] = amount; };
-         virtual double getInFlight (std::string paymentHash) { return this->_inFlights[paymentHash]; };
+         virtual HTLC* getInFlight (std::string paymentHash) { return this->_inFlights[paymentHash]; };
+         virtual void setInFlight (std::string paymentHash, HTLC *htlc) { this->_inFlights[paymentHash] = htlc; };
+         virtual bool isInFlight (std::string paymentHash) { return (this->_inFlights[paymentHash] != NULL ? true : false); };
          virtual void removeInFlight (std::string paymentHash) { this->_inFlights.erase(paymentHash); };
-         virtual void setPendingHTLC (std::string paymentHash, UpdateAddHTLC *htlc) { this->_pendingHTLCs[paymentHash] = htlc; };
-         virtual UpdateAddHTLC* getPendingHTLC (std::string paymentHash) { return this->_pendingHTLCs[paymentHash]; };
+         virtual HTLC* getPendingHTLC (std::string paymentHash) { return this->_pendingHTLCs[paymentHash]; };
+         virtual void setPendingHTLC (std::string paymentHash, HTLC *htlc) { this->_pendingHTLCs[paymentHash] = htlc; };
+         virtual bool isPendingHTLC (std::string paymentHash) { return (this->_pendingHTLCs[paymentHash] != NULL ? true : false); };
+         virtual std::map<std::string, HTLC*> getPendingHTLCs () { return this->_pendingHTLCs; };
          virtual void removePendingHTLC (std::string paymentHash) { this->_pendingHTLCs.erase(paymentHash); };
-         virtual void setPendingHTLCFIFO (std::string paymentHash) { this->_pendingHTLCsFIFO.push(paymentHash); };
-         virtual std::string getPendingHTLCFIFO () { return _pendingHTLCsFIFO.front(); };
-         virtual void removePendingHTLCFIFO () { this->_pendingHTLCsFIFO.pop(); };
+         virtual void setFirstPendingHTLCFIFO (std::string paymentHash) { this->_pendingHTLCsFIFO.push_front(paymentHash); };
+         virtual void setLastPendingHTLCFIFO (std::string paymentHash) { this->_pendingHTLCsFIFO.push_back(paymentHash); };
+         virtual std::string getFirstPendingHTLCFIFO () { return _pendingHTLCsFIFO.front(); };
+         virtual std::string getLastPendingHTLCFIFO () { return _pendingHTLCsFIFO.back(); };
+         virtual void removeFirstPendingHTLCFIFO () { this->_pendingHTLCsFIFO.pop_front(); };
+         virtual void removeLastPendingHTLCFIFO () { this->_pendingHTLCsFIFO.pop_back(); };
+         virtual void removePendingHTLCFIFOByValue (std::string paymentHash) { this->_pendingHTLCsFIFO.erase(std::remove(_pendingHTLCsFIFO.begin(), _pendingHTLCsFIFO.end(), paymentHash), _pendingHTLCsFIFO.end()); };
          virtual size_t getPendingBatchSize () { return this->_pendingHTLCsFIFO.size(); };
-         virtual std::vector<UpdateAddHTLC *> getHTLCsWaitingForAck (int id) { return this->_HTLCsWaitingForAck[id]; };
-         virtual void setHTLCsWaitingForAck (int id, std::vector<UpdateAddHTLC *> vector) { this->_HTLCsWaitingForAck[id] = vector;};
+         virtual std::vector<HTLC *> getHTLCsWaitingForAck (int id) { return this->_HTLCsWaitingForAck[id]; };
+         virtual void setHTLCsWaitingForAck (int id, std::vector<HTLC *> vector) { this->_HTLCsWaitingForAck[id] = vector;};
          virtual void removeHTLCsWaitingForAck (int id) { this->_HTLCsWaitingForAck.erase(id); };
          virtual void setPreviousHop (std::string paymentHash, std::string previousHop) { this->_previousHop[paymentHash] = previousHop; };
          virtual std::string getPreviousHop (std::string paymentHash) { return this->_previousHop[paymentHash]; };
@@ -77,13 +98,47 @@ class PaymentChannel {
          virtual void setNeighborGate(cGate* gate) { this->_neighborGate = gate; };
 
         // Auxiliary functions
-        Json::Value toJson() const;
+        //Json::Value toJson() const;
 
     private:
         void copy(const PaymentChannel& other);
 
 };
 
+PaymentChannel::PaymentChannel(double capacity, double fee, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate *localGate, cGate *neighborGate) {
+    this->_capacity = capacity;
+    this->_fee = fee;
+    this->_quality = quality;
+    this->_maxAcceptedHTLCs = maxAcceptedHTLCs;
+    this->_HTLCMinimumMsat = HTLCMinimumMsat;
+    this->_numHTLCs = numHTLCs;
+    this->_channelReserveSatoshis = channelReserveSatoshis;
+    this->_localGate = localGate;
+    this->_neighborGate = neighborGate;
+}
 
+
+void PaymentChannel::copy(const PaymentChannel& other) {
+    this->_capacity = other._capacity;
+    this->_fee = other._fee;
+    this->_quality = other._quality;
+    this->_maxAcceptedHTLCs = other._maxAcceptedHTLCs;
+    this->_HTLCMinimumMsat = other._HTLCMinimumMsat;
+    this->_numHTLCs = other._numHTLCs;
+    this->_channelReserveSatoshis = other._channelReserveSatoshis;
+    this->_localGate = other._localGate;
+    this->_neighborGate = other._neighborGate;
+}
+
+//
+//Json::Value PaymentChannel::toJson() const {
+//    Json::Value json(Json::objectValue);
+//    json["capacity"] = std::to_string(this->_capacity);
+//    json["fee"] = std::to_string(this->_fee);
+//    json["quality"] = std::to_string(this->_quality);
+//    json["maxAcceptedHLTCs"] = std::to_string(this->_maxAcceptedHTLCs);
+//    json["HTLCMinimumMsat"] = std::to_string(this->_HTLCMinimumMsat);
+//    return json;
+//}
 
 

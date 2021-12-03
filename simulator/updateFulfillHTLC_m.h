@@ -30,6 +30,7 @@
  * {
  *     string paymentHash;
  *     string preImage;
+ *     double value;
  * }
  * </pre>
  */
@@ -38,6 +39,7 @@ class UpdateFulfillHTLC : public ::omnetpp::cPacket
   protected:
     ::omnetpp::opp_string paymentHash;
     ::omnetpp::opp_string preImage;
+    double value;
 
   private:
     void copy(const UpdateFulfillHTLC& other);
@@ -60,6 +62,8 @@ class UpdateFulfillHTLC : public ::omnetpp::cPacket
     virtual void setPaymentHash(const char * paymentHash);
     virtual const char * getPreImage() const;
     virtual void setPreImage(const char * preImage);
+    virtual double getValue() const;
+    virtual void setValue(double value);
 };
 
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const UpdateFulfillHTLC& obj) {obj.parsimPack(b);}

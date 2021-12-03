@@ -6,6 +6,6 @@ cplusplus {{
 packet UpdateAddHTLC {
     string source;
     string paymentHash;
-    //simtime_t timeout; 
+    simtime_t timeout; 
     double value;
 }
