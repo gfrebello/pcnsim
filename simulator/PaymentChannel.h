@@ -20,34 +20,18 @@ class PaymentChannel {
         double _HTLCMinimumMsat;
         int _numHTLCs;
         double _channelReserveSatoshis;
-<<<<<<< Updated upstream:PaymentChannel.h
-        std::map<std::string, double> _inFlights;
-        std::map<std::string, UpdateAddHTLC *> _pendingHTLCs; //paymentHash to HTLC
-        std::queue<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added
-        std::map<int, std::vector<UpdateAddHTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
-        std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
 
-=======
         std::map<std::string, HTLC *> _inFlights; //paymentHash to value
         std::map<std::string, HTLC *> _pendingHTLCs; //paymentHash to pending HTLC
         std::deque<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added to the pending list
         std::map<int, std::vector<HTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
         std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
->>>>>>> Stashed changes:simulator/PaymentChannel.h
+
         cGate *_localGate;
         cGate *_neighborGate;
 
         // Constructors for polymorphism
         PaymentChannel() {};
-<<<<<<< Updated upstream:simulator/PaymentChannel.h
-        PaymentChannel(cGate *gate);
-=======
-<<<<<<< Updated upstream:PaymentChannel.h
-        //PaymentChannel(cGate *gate);
->>>>>>> Stashed changes:PaymentChannel.h
-        //PaymentChannel(double capacity, double fee, double quality, cGate *gate);
-=======
->>>>>>> Stashed changes:simulator/PaymentChannel.h
         PaymentChannel(double capacity, double balance, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate* localGate, cGate *neighborGate);
 
         // Getters and setters

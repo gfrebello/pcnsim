@@ -29,11 +29,8 @@
  * packet UpdateFailHTLC
  * {
  *     string paymentHash;
-<<<<<<< Updated upstream
-=======
  *     string errorReason;
  *     double value;
->>>>>>> Stashed changes
  * }
  * </pre>
  */
@@ -41,11 +38,8 @@ class UpdateFailHTLC : public ::omnetpp::cPacket
 {
   protected:
     ::omnetpp::opp_string paymentHash;
-<<<<<<< Updated upstream
-=======
     ::omnetpp::opp_string errorReason;
     double value;
->>>>>>> Stashed changes
 
   private:
     void copy(const UpdateFailHTLC& other);
@@ -66,13 +60,10 @@ class UpdateFailHTLC : public ::omnetpp::cPacket
     // field getter/setter methods
     virtual const char * getPaymentHash() const;
     virtual void setPaymentHash(const char * paymentHash);
-<<<<<<< Updated upstream
-=======
     virtual const char * getErrorReason() const;
     virtual void setErrorReason(const char * errorReason);
     virtual double getValue() const;
     virtual void setValue(double value);
->>>>>>> Stashed changes
 };
 
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const UpdateFailHTLC& obj) {obj.parsimPack(b);}

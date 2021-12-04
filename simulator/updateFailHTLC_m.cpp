@@ -181,10 +181,7 @@ Register_Class(UpdateFailHTLC)
 
 UpdateFailHTLC::UpdateFailHTLC(const char *name, short kind) : ::omnetpp::cPacket(name,kind)
 {
-<<<<<<< Updated upstream
-=======
     this->value = 0;
->>>>>>> Stashed changes
 }
 
 UpdateFailHTLC::UpdateFailHTLC(const UpdateFailHTLC& other) : ::omnetpp::cPacket(other)
@@ -207,33 +204,24 @@ UpdateFailHTLC& UpdateFailHTLC::operator=(const UpdateFailHTLC& other)
 void UpdateFailHTLC::copy(const UpdateFailHTLC& other)
 {
     this->paymentHash = other.paymentHash;
-<<<<<<< Updated upstream
-=======
     this->errorReason = other.errorReason;
     this->value = other.value;
->>>>>>> Stashed changes
 }
 
 void UpdateFailHTLC::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->paymentHash);
-<<<<<<< Updated upstream
-=======
     doParsimPacking(b,this->errorReason);
     doParsimPacking(b,this->value);
->>>>>>> Stashed changes
 }
 
 void UpdateFailHTLC::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->paymentHash);
-<<<<<<< Updated upstream
-=======
     doParsimUnpacking(b,this->errorReason);
     doParsimUnpacking(b,this->value);
->>>>>>> Stashed changes
 }
 
 const char * UpdateFailHTLC::getPaymentHash() const
@@ -246,8 +234,6 @@ void UpdateFailHTLC::setPaymentHash(const char * paymentHash)
     this->paymentHash = paymentHash;
 }
 
-<<<<<<< Updated upstream
-=======
 const char * UpdateFailHTLC::getErrorReason() const
 {
     return this->errorReason.c_str();
@@ -268,7 +254,6 @@ void UpdateFailHTLC::setValue(double value)
     this->value = value;
 }
 
->>>>>>> Stashed changes
 class UpdateFailHTLCDescriptor : public omnetpp::cClassDescriptor
 {
   private:
@@ -334,11 +319,7 @@ const char *UpdateFailHTLCDescriptor::getProperty(const char *propertyname) cons
 int UpdateFailHTLCDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-<<<<<<< Updated upstream
-    return basedesc ? 1+basedesc->getFieldCount() : 1;
-=======
     return basedesc ? 3+basedesc->getFieldCount() : 3;
->>>>>>> Stashed changes
 }
 
 unsigned int UpdateFailHTLCDescriptor::getFieldTypeFlags(int field) const
@@ -351,15 +332,10 @@ unsigned int UpdateFailHTLCDescriptor::getFieldTypeFlags(int field) const
     }
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,
-<<<<<<< Updated upstream
-    };
-    return (field>=0 && field<1) ? fieldTypeFlags[field] : 0;
-=======
         FD_ISEDITABLE,
         FD_ISEDITABLE,
     };
     return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
->>>>>>> Stashed changes
 }
 
 const char *UpdateFailHTLCDescriptor::getFieldName(int field) const
@@ -372,15 +348,10 @@ const char *UpdateFailHTLCDescriptor::getFieldName(int field) const
     }
     static const char *fieldNames[] = {
         "paymentHash",
-<<<<<<< Updated upstream
-    };
-    return (field>=0 && field<1) ? fieldNames[field] : nullptr;
-=======
         "errorReason",
         "value",
     };
     return (field>=0 && field<3) ? fieldNames[field] : nullptr;
->>>>>>> Stashed changes
 }
 
 int UpdateFailHTLCDescriptor::findField(const char *fieldName) const
@@ -388,11 +359,8 @@ int UpdateFailHTLCDescriptor::findField(const char *fieldName) const
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
     if (fieldName[0]=='p' && strcmp(fieldName, "paymentHash")==0) return base+0;
-<<<<<<< Updated upstream
-=======
     if (fieldName[0]=='e' && strcmp(fieldName, "errorReason")==0) return base+1;
     if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+2;
->>>>>>> Stashed changes
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -406,15 +374,10 @@ const char *UpdateFailHTLCDescriptor::getFieldTypeString(int field) const
     }
     static const char *fieldTypeStrings[] = {
         "string",
-<<<<<<< Updated upstream
-    };
-    return (field>=0 && field<1) ? fieldTypeStrings[field] : nullptr;
-=======
         "string",
         "double",
     };
     return (field>=0 && field<3) ? fieldTypeStrings[field] : nullptr;
->>>>>>> Stashed changes
 }
 
 const char **UpdateFailHTLCDescriptor::getFieldPropertyNames(int field) const
@@ -482,11 +445,8 @@ std::string UpdateFailHTLCDescriptor::getFieldValueAsString(void *object, int fi
     UpdateFailHTLC *pp = (UpdateFailHTLC *)object; (void)pp;
     switch (field) {
         case 0: return oppstring2string(pp->getPaymentHash());
-<<<<<<< Updated upstream
-=======
         case 1: return oppstring2string(pp->getErrorReason());
         case 2: return double2string(pp->getValue());
->>>>>>> Stashed changes
         default: return "";
     }
 }
@@ -502,11 +462,8 @@ bool UpdateFailHTLCDescriptor::setFieldValueAsString(void *object, int field, in
     UpdateFailHTLC *pp = (UpdateFailHTLC *)object; (void)pp;
     switch (field) {
         case 0: pp->setPaymentHash((value)); return true;
-<<<<<<< Updated upstream
-=======
         case 1: pp->setErrorReason((value)); return true;
         case 2: pp->setValue(string2double(value)); return true;
->>>>>>> Stashed changes
         default: return false;
     }
 }

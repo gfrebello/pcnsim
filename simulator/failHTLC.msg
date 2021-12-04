@@ -1,3 +1,0 @@
-packet FailHTLC{
-    string errorReason;
-}

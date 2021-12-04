@@ -3312,3 +3312,298 @@ Creating executable: out/gcc-release//simulator
 make MODE=release all 
 FullNode.cpp
 Creating executable: out/gcc-release//simulator
+16:06:07 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+MSGC: updateFailHTLC.msg
+FullNode.cpp
+In file included from FullNode.cpp:8:
+PaymentChannel.h:23:1: error: version control conflict marker in file
+   23 | <<<<<<< Updated upstream:PaymentChannel.h
+      | ^~~~~~~
+PaymentChannel.h:30:1: error: version control conflict marker in file
+   30 | =======
+      | ^~~~~~~
+PaymentChannel.h:32:39: error: redeclaration of ‘std::map<std::__cxx11::basic_string<char>, HTLC*> PaymentChannel::_pendingHTLCs’
+   32 |         std::map<std::string, HTLC *> _pendingHTLCs; //paymentHash to pending HTLC
+      |                                       ^~~~~~~~~~~~~
+PaymentChannel.h:25:48: note: previous declaration ‘std::map<std::__cxx11::basic_string<char>, UpdateAddHTLC*> PaymentChannel::_pendingHTLCs’
+   25 |         std::map<std::string, UpdateAddHTLC *> _pendingHTLCs; //paymentHash to HTLC
+      |                                                ^~~~~~~~~~~~~
+PaymentChannel.h:33:33: error: redeclaration of ‘std::deque<std::__cxx11::basic_string<char>, std::allocator<std::__cxx11::basic_string<char> > > PaymentChannel::_pendingHTLCsFIFO’
+   33 |         std::deque<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added to the pending list
+      |                                 ^~~~~~~~~~~~~~~~~
+PaymentChannel.h:26:33: note: previous declaration ‘std::queue<std::__cxx11::basic_string<char> > PaymentChannel::_pendingHTLCsFIFO’
+   26 |         std::queue<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added
+      |                                 ^~~~~~~~~~~~~~~~~
+PaymentChannel.h:34:44: error: redeclaration of ‘std::map<int, std::vector<HTLC*> > PaymentChannel::_HTLCsWaitingForAck’
+   34 |         std::map<int, std::vector<HTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
+      |                                            ^~~~~~~~~~~~~~~~~~~
+PaymentChannel.h:27:53: note: previous declaration ‘std::map<int, std::vector<UpdateAddHTLC*> > PaymentChannel::_HTLCsWaitingForAck’
+   27 |         std::map<int, std::vector<UpdateAddHTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
+      |                                                     ^~~~~~~~~~~~~~~~~~~
+PaymentChannel.h:35:44: error: redeclaration of ‘std::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> > PaymentChannel::_previousHop’
+   35 |         std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
+      |                                            ^~~~~~~~~~~~
+PaymentChannel.h:28:44: note: previous declaration ‘std::map<std::__cxx11::basic_string<char>, std::__cxx11::basic_string<char> > PaymentChannel::_previousHop’
+   28 |         std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
+      |                                            ^~~~~~~~~~~~
+PaymentChannel.h:36:1: error: version control conflict marker in file
+   36 | >>>>>>> Stashed changes:simulator/PaymentChannel.h
+      | ^~~~~~~
+PaymentChannel.h:42:1: error: version control conflict marker in file
+   42 | <<<<<<< Updated upstream:simulator/PaymentChannel.h
+      | ^~~~~~~
+PaymentChannel.h:44:1: error: version control conflict marker in file
+   44 | =======
+      | ^~~~~~~
+In file included from FullNode.cpp:8:
+PaymentChannel.h: In member function ‘virtual HTLC* PaymentChannel::getInFlight(std::string)’:
+PaymentChannel.h:72:77: error: ‘class PaymentChannel’ has no member named ‘_inFlights’
+   72 |          virtual HTLC* getInFlight (std::string paymentHash) { return this->_inFlights[paymentHash]; };
+      |                                                                             ^~~~~~~~~~
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::setInFlight(std::string, HTLC*)’:
+PaymentChannel.h:73:81: error: ‘class PaymentChannel’ has no member named ‘_inFlights’
+   73 |          virtual void setInFlight (std::string paymentHash, HTLC *htlc) { this->_inFlights[paymentHash] = htlc; };
+      |                                                                                 ^~~~~~~~~~
+PaymentChannel.h: In member function ‘virtual bool PaymentChannel::isInFlight(std::string)’:
+PaymentChannel.h:74:76: error: ‘class PaymentChannel’ has no member named ‘_inFlights’
+   74 |          virtual bool isInFlight (std::string paymentHash) { return (this->_inFlights[paymentHash] != NULL ? true : false); };
+      |                                                                            ^~~~~~~~~~
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::removeInFlight(std::string)’:
+PaymentChannel.h:75:72: error: ‘class PaymentChannel’ has no member named ‘_inFlights’
+   75 |          virtual void removeInFlight (std::string paymentHash) { this->_inFlights.erase(paymentHash); };
+      |                                                                        ^~~~~~~~~~
+PaymentChannel.h: In member function ‘virtual HTLC* PaymentChannel::getPendingHTLC(std::string)’:
+PaymentChannel.h:76:105: error: cannot convert ‘std::map<std::__cxx11::basic_string<char>, UpdateAddHTLC*>::mapped_type’ {aka ‘UpdateAddHTLC*’} to ‘HTLC*’ in return
+   76 |          virtual HTLC* getPendingHTLC (std::string paymentHash) { return this->_pendingHTLCs[paymentHash]; };
+      |                                                                                                         ^
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::setPendingHTLC(std::string, HTLC*)’:
+PaymentChannel.h:77:113: error: cannot convert ‘HTLC*’ to ‘std::map<std::__cxx11::basic_string<char>, UpdateAddHTLC*>::mapped_type’ {aka ‘UpdateAddHTLC*’} in assignment
+   77 |          virtual void setPendingHTLC (std::string paymentHash, HTLC *htlc) { this->_pendingHTLCs[paymentHash] = htlc; };
+      |                                                                                                                 ^~~~
+      |                                                                                                                 |
+      |                                                                                                                 HTLC*
+PaymentChannel.h: In member function ‘virtual std::map<std::__cxx11::basic_string<char>, HTLC*> PaymentChannel::getPendingHTLCs()’:
+PaymentChannel.h:79:81: error: could not convert ‘((PaymentChannel*)this)->PaymentChannel::_pendingHTLCs’ from ‘map<[...],UpdateAddHTLC*>’ to ‘map<[...],HTLC*>’
+   79 |          virtual std::map<std::string, HTLC*> getPendingHTLCs () { return this->_pendingHTLCs; };
+      |                                                                           ~~~~~~^~~~~~~~~~~~~
+      |                                                                                 |
+      |                                                                                 map<[...],UpdateAddHTLC*>
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::setFirstPendingHTLCFIFO(std::string)’:
+PaymentChannel.h:81:99: error: ‘class std::queue<std::__cxx11::basic_string<char> >’ has no member named ‘push_front’
+   81 |          virtual void setFirstPendingHTLCFIFO (std::string paymentHash) { this->_pendingHTLCsFIFO.push_front(paymentHash); };
+      |                                                                                                   ^~~~~~~~~~
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::setLastPendingHTLCFIFO(std::string)’:
+PaymentChannel.h:82:98: error: ‘class std::queue<std::__cxx11::basic_string<char> >’ has no member named ‘push_back’
+   82 |          virtual void setLastPendingHTLCFIFO (std::string paymentHash) { this->_pendingHTLCsFIFO.push_back(paymentHash); };
+      |                                                                                                  ^~~~~~~~~
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::removeFirstPendingHTLCFIFO()’:
+PaymentChannel.h:85:79: error: ‘class std::queue<std::__cxx11::basic_string<char> >’ has no member named ‘pop_front’
+   85 |          virtual void removeFirstPendingHTLCFIFO () { this->_pendingHTLCsFIFO.pop_front(); };
+      |                                                                               ^~~~~~~~~
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::removeLastPendingHTLCFIFO()’:
+PaymentChannel.h:86:78: error: ‘class std::queue<std::__cxx11::basic_string<char> >’ has no member named ‘pop_back’
+   86 |          virtual void removeLastPendingHTLCFIFO () { this->_pendingHTLCsFIFO.pop_back(); };
+      |                                                                              ^~~~~~~~
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::removePendingHTLCFIFOByValue(std::string)’:
+PaymentChannel.h:87:104: error: ‘class std::queue<std::__cxx11::basic_string<char> >’ has no member named ‘erase’
+   87 |          virtual void removePendingHTLCFIFOByValue (std::string paymentHash) { this->_pendingHTLCsFIFO.erase(std::remove(_pendingHTLCsFIFO.begin(), _pendingHTLCsFIFO.end(), paymentHash), _pendingHTLCsFIFO.end()); };
+      |                                                                                                        ^~~~~
+PaymentChannel.h:87:140: error: ‘class std::queue<std::__cxx11::basic_string<char> >’ has no member named ‘begin’
+   87 |          virtual void removePendingHTLCFIFOByValue (std::string paymentHash) { this->_pendingHTLCsFIFO.erase(std::remove(_pendingHTLCsFIFO.begin(), _pendingHTLCsFIFO.end(), paymentHash), _pendingHTLCsFIFO.end()); };
+      |                                                                                                                                            ^~~~~
+PaymentChannel.h:87:167: error: ‘class std::queue<std::__cxx11::basic_string<char> >’ has no member named ‘end’
+   87 |          virtual void removePendingHTLCFIFOByValue (std::string paymentHash) { this->_pendingHTLCsFIFO.erase(std::remove(_pendingHTLCsFIFO.begin(), _pendingHTLCsFIFO.end(), paymentHash), _pendingHTLCsFIFO.end()); };
+      |                                                                                                                                                                       ^~~
+PaymentChannel.h:87:206: error: ‘class std::queue<std::__cxx11::basic_string<char> >’ has no member named ‘end’
+   87 |          virtual void removePendingHTLCFIFOByValue (std::string paymentHash) { this->_pendingHTLCsFIFO.erase(std::remove(_pendingHTLCsFIFO.begin(), _pendingHTLCsFIFO.end(), paymentHash), _pendingHTLCsFIFO.end()); };
+      |                                                                                                                                                                                                              ^~~
+PaymentChannel.h: In member function ‘virtual std::vector<HTLC*> PaymentChannel::getHTLCsWaitingForAck(int)’:
+PaymentChannel.h:89:106: error: could not convert ‘((PaymentChannel*)this)->PaymentChannel::_HTLCsWaitingForAck.std::map<int, std::vector<UpdateAddHTLC*> >::operator[](id)’ from ‘vector<UpdateAddHTLC*>’ to ‘vector<HTLC*>’
+   89 |          virtual std::vector<HTLC *> getHTLCsWaitingForAck (int id) { return this->_HTLCsWaitingForAck[id]; };
+      |                                                                                                          ^
+      |                                                                                                          |
+      |                                                                                                          vector<UpdateAddHTLC*>
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::setHTLCsWaitingForAck(int, std::vector<HTLC*>)’:
+PaymentChannel.h:90:116: error: no match for ‘operator=’ (operand types are ‘std::map<int, std::vector<UpdateAddHTLC*> >::mapped_type’ {aka ‘std::vector<UpdateAddHTLC*>’} and ‘std::vector<HTLC*>’)
+   90 |          virtual void setHTLCsWaitingForAck (int id, std::vector<HTLC *> vector) { this->_HTLCsWaitingForAck[id] = vector;};
+      |                                                                                                                    ^~~~~~
+In file included from /usr/include/c++/10/vector:72,
+                 from /home/gabriel/omnetpp-5.7/include/omnetpp/onstartup.h:19,
+                 from /home/gabriel/omnetpp-5.7/include/omnetpp/globals.h:21,
+                 from /home/gabriel/omnetpp-5.7/include/omnetpp/cobjectfactory.h:20,
+                 from /home/gabriel/omnetpp-5.7/include/omnetpp.h:30,
+                 from globals.h:2,
+                 from FullNode.cpp:1:
+/usr/include/c++/10/bits/vector.tcc:198:5: note: candidate: ‘std::vector<_Tp, _Alloc>& std::vector<_Tp, _Alloc>::operator=(const std::vector<_Tp, _Alloc>&) [with _Tp = UpdateAddHTLC*; _Alloc = std::allocator<UpdateAddHTLC*>]’
+  198 |     vector<_Tp, _Alloc>::
+      |     ^~~~~~~~~~~~~~~~~~~
+/usr/include/c++/10/bits/vector.tcc:199:42: note:   no known conversion for argument 1 from ‘std::vector<HTLC*>’ to ‘const std::vector<UpdateAddHTLC*>&’
+  199 |     operator=(const vector<_Tp, _Alloc>& __x)
+      |               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~
+In file included from /usr/include/c++/10/vector:67,
+                 from /home/gabriel/omnetpp-5.7/include/omnetpp/onstartup.h:19,
+                 from /home/gabriel/omnetpp-5.7/include/omnetpp/globals.h:21,
+                 from /home/gabriel/omnetpp-5.7/include/omnetpp/cobjectfactory.h:20,
+                 from /home/gabriel/omnetpp-5.7/include/omnetpp.h:30,
+                 from globals.h:2,
+                 from FullNode.cpp:1:
+/usr/include/c++/10/bits/stl_vector.h:709:7: note: candidate: ‘std::vector<_Tp, _Alloc>& std::vector<_Tp, _Alloc>::operator=(std::vector<_Tp, _Alloc>&&) [with _Tp = UpdateAddHTLC*; _Alloc = std::allocator<UpdateAddHTLC*>]’
+  709 |       operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
+      |       ^~~~~~~~
+/usr/include/c++/10/bits/stl_vector.h:709:26: note:   no known conversion for argument 1 from ‘std::vector<HTLC*>’ to ‘std::vector<UpdateAddHTLC*>&&’
+  709 |       operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
+      |                 ~~~~~~~~~^~~
+/usr/include/c++/10/bits/stl_vector.h:730:7: note: candidate: ‘std::vector<_Tp, _Alloc>& std::vector<_Tp, _Alloc>::operator=(std::initializer_list<_Tp>) [with _Tp = UpdateAddHTLC*; _Alloc = std::allocator<UpdateAddHTLC*>]’
+  730 |       operator=(initializer_list<value_type> __l)
+      |       ^~~~~~~~
+/usr/include/c++/10/bits/stl_vector.h:730:46: note:   no known conversion for argument 1 from ‘std::vector<HTLC*>’ to ‘std::initializer_list<UpdateAddHTLC*>’
+  730 |       operator=(initializer_list<value_type> __l)
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~
+In file included from FullNode.cpp:8:
+PaymentChannel.h: In member function ‘virtual omnetpp::cGate* PaymentChannel::getLocalGate() const’:
+PaymentChannel.h:95:61: error: ‘const class PaymentChannel’ has no member named ‘_localGate’; did you mean ‘getLocalGate’?
+   95 |          virtual cGate* getLocalGate() const { return this->_localGate; };
+      |                                                             ^~~~~~~~~~
+      |                                                             getLocalGate
+PaymentChannel.h: In member function ‘virtual void PaymentChannel::setLocalGate(omnetpp::cGate*)’:
+PaymentChannel.h:96:57: error: ‘class PaymentChannel’ has no member named ‘_localGate’; did you mean ‘getLocalGate’?
+   96 |          virtual void setLocalGate(cGate* gate) { this->_localGate = gate; };
+      |                                                         ^~~~~~~~~~
+      |                                                         getLocalGate
+PaymentChannel.h: At global scope:
+PaymentChannel.h:108:1: error: no declaration matches ‘PaymentChannel::PaymentChannel(double, double, double, int, int, double, double, omnetpp::cGate*, omnetpp::cGate*)’
+  108 | PaymentChannel::PaymentChannel(double capacity, double fee, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate *localGate, cGate *neighborGate) {
+      | ^~~~~~~~~~~~~~
+In file included from FullNode.cpp:8:
+PaymentChannel.h:11:7: note: candidates are: ‘PaymentChannel::PaymentChannel(PaymentChannel&&)’
+   11 | class PaymentChannel {
+      |       ^~~~~~~~~~~~~~
+PaymentChannel.h:11:7: note:                 ‘PaymentChannel::PaymentChannel(const PaymentChannel&)’
+PaymentChannel.h:41:9: note:                 ‘PaymentChannel::PaymentChannel()’
+   41 |         PaymentChannel() {};
+      |         ^~~~~~~~~~~~~~
+PaymentChannel.h:11:7: note: ‘class PaymentChannel’ defined here
+   11 | class PaymentChannel {
+      |       ^~~~~~~~~~~~~~
+In file included from FullNode.cpp:8:
+PaymentChannel.h: In member function ‘void PaymentChannel::copy(const PaymentChannel&)’:
+PaymentChannel.h:129:11: error: ‘class PaymentChannel’ has no member named ‘_localGate’; did you mean ‘getLocalGate’?
+  129 |     this->_localGate = other._localGate;
+      |           ^~~~~~~~~~
+      |           getLocalGate
+PaymentChannel.h:129:30: error: ‘const class PaymentChannel’ has no member named ‘_localGate’; did you mean ‘getLocalGate’?
+  129 |     this->_localGate = other._localGate;
+      |                              ^~~~~~~~~~
+      |                              getLocalGate
+FullNode.cpp: In member function ‘virtual void FullNode::initialize()’:
+FullNode.cpp:123:160: error: no matching function for call to ‘PaymentChannel::PaymentChannel(double&, double&, double&, int&, int&, double&, double&, omnetpp::cGate*&, omnetpp::cGate*&)’
+  123 |         PaymentChannel pc = PaymentChannel(capacity, fee, quality, maxAcceptedHTLCs, numHTLCs, HTLCMinimumMsat, channelReserveSatoshis, localGate, neighborGate);
+      |                                                                                                                                                                ^
+In file included from FullNode.cpp:8:
+PaymentChannel.h:41:9: note: candidate: ‘PaymentChannel::PaymentChannel()’
+   41 |         PaymentChannel() {};
+      |         ^~~~~~~~~~~~~~
+PaymentChannel.h:41:9: note:   candidate expects 0 arguments, 9 provided
+PaymentChannel.h:11:7: note: candidate: ‘PaymentChannel::PaymentChannel(const PaymentChannel&)’
+   11 | class PaymentChannel {
+      |       ^~~~~~~~~~~~~~
+PaymentChannel.h:11:7: note:   candidate expects 1 argument, 9 provided
+PaymentChannel.h:11:7: note: candidate: ‘PaymentChannel::PaymentChannel(PaymentChannel&&)’
+PaymentChannel.h:11:7: note:   candidate expects 1 argument, 9 provided
+make: *** [Makefile:132: out/gcc-release//FullNode.o] Error 1
+"make MODE=release all" terminated with exit code 2. Build might be incomplete.
+16:07:22 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+HTLC.cpp
+PaymentChannel.cpp
+PaymentChannel.cpp:3:1: error: redefinition of ‘PaymentChannel::PaymentChannel(double, double, double, int, int, double, double, omnetpp::cGate*, omnetpp::cGate*)’
+    3 | PaymentChannel::PaymentChannel(double capacity, double fee, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate *localGate, cGate *neighborGate) {
+      | ^~~~~~~~~~~~~~
+In file included from PaymentChannel.cpp:1:
+PaymentChannel.h:92:1: note: ‘PaymentChannel::PaymentChannel(double, double, double, int, int, double, double, omnetpp::cGate*, omnetpp::cGate*)’ previously defined here
+   92 | PaymentChannel::PaymentChannel(double capacity, double fee, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate *localGate, cGate *neighborGate) {
+      | ^~~~~~~~~~~~~~
+PaymentChannel.cpp:37:6: error: redefinition of ‘void PaymentChannel::copy(const PaymentChannel&)’
+   37 | void PaymentChannel::copy(const PaymentChannel& other) {
+      |      ^~~~~~~~~~~~~~
+In file included from PaymentChannel.cpp:1:
+PaymentChannel.h:105:6: note: ‘void PaymentChannel::copy(const PaymentChannel&)’ previously defined here
+  105 | void PaymentChannel::copy(const PaymentChannel& other) {
+      |      ^~~~~~~~~~~~~~
+PaymentChannel.cpp:51:13: error: no declaration matches ‘Json::Value PaymentChannel::toJson() const’
+   51 | Json::Value PaymentChannel::toJson() const {
+      |             ^~~~~~~~~~~~~~
+PaymentChannel.cpp:51:13: note: no functions named ‘Json::Value PaymentChannel::toJson() const’
+In file included from PaymentChannel.cpp:1:
+PaymentChannel.h:11:7: note: ‘class PaymentChannel’ defined here
+   11 | class PaymentChannel {
+      |       ^~~~~~~~~~~~~~
+make: *** [Makefile:132: out/gcc-release//PaymentChannel.o] Error 1
+"make MODE=release all" terminated with exit code 2. Build might be incomplete.
+16:08:31 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+MSGC: commitmentSigned.msg
+commitmentSigned_m.cpp
+updateAddHTLC_m.cpp
+updateFailHTLC_m.cpp
+updateFulfillHTLC_m.cpp
+Creating executable: out/gcc-release//simulator
+16:10:03 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+Creating executable: out/gcc-release//simulator
+16:38:34 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+FullNode.cpp: In member function ‘virtual void FullNode::initHandler(BaseMessage*)’:
+FullNode.cpp:197:60: error: ‘trMsg’ was not declared in this scope
+  197 |     EV << "TRANSACTION_INIT received. Starting payment "<< trMsg->getName() << "\n";
+      |                                                            ^~~~~
+make: *** [Makefile:131: out/gcc-release//FullNode.o] Error 1
+"make MODE=release all" terminated with exit code 2. Build might be incomplete.
+16:39:17 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+Creating executable: out/gcc-release//simulator
+16:39:33 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+FullNode.cpp: In member function ‘virtual void FullNode::handleMessage(omnetpp::cMessage*)’:
+FullNode.cpp:232:13: error: ‘initHangler’ was not declared in this scope; did you mean ‘initHandler’?
+  232 |             initHangler(baseMsg);
+      |             ^~~~~~~~~~~
+      |             initHandler
+make: *** [Makefile:131: out/gcc-release//FullNode.o] Error 1
+"make MODE=release all" terminated with exit code 2. Build might be incomplete.
+16:39:40 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+Creating executable: out/gcc-release//simulator
+17:15:04 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+FullNode.cpp: In member function ‘virtual void FullNode::handleMessage(omnetpp::cMessage*)’:
+FullNode.cpp:206:13: error: ‘commitSignedHangler’ was not declared in this scope; did you mean ‘commitSignedHandler’?
+  206 |             commitSignedHangler(baseMsg);
+      |             ^~~~~~~~~~~~~~~~~~~
+      |             commitSignedHandler
+FullNode.cpp: In member function ‘virtual void FullNode::updateAddHTLCHandler(BaseMessage*)’:
+FullNode.cpp:436:13: error: break statement not within loop or switch
+  436 |             break;
+      |             ^~~~~
+FullNode.cpp: In member function ‘virtual void FullNode::updateFulfillHTLCHandler(BaseMessage*)’:
+FullNode.cpp:554:14: error: break statement not within loop or switch
+  554 |              break;
+      |              ^~~~~
+FullNode.cpp: In member function ‘virtual void FullNode::updateFailHTLCHandler(BaseMessage*)’:
+FullNode.cpp:637:13: error: break statement not within loop or switch
+  637 |             break;
+      |             ^~~~~
+make: *** [Makefile:131: out/gcc-release//FullNode.o] Error 1
+"make MODE=release all" terminated with exit code 2. Build might be incomplete.
+17:16:22 **** Incremental Build of configuration release for project simulator ****
+make MODE=release all 
+FullNode.cpp
+Creating executable: out/gcc-release//simulator
