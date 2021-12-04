@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;simulator/HTLCRefused&apos; to &apos;HTLCRefused,sg&apos;" description="Rename resource &apos;HTLCRefused&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="HTLCRefused" name="HTLCRefused,sg" stamp="1638382644388" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;simulator/HTLCRefused,sg&apos; to &apos;HTLCRefused.msg&apos;" description="Rename resource &apos;HTLCRefused,sg&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="HTLCRefused,sg" name="HTLCRefused.msg" stamp="1638382651955" updateReferences="true"/>
-</session>
