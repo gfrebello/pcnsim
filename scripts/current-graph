@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d6" for="edge" attr.name="delay" attr.type="long" />
+  <key id="d5" for="edge" attr.name="channel_reserve_satoshis" attr.type="double" />
+  <key id="d4" for="edge" attr.name="HTLC_minimum_msat" attr.type="double" />
+  <key id="d3" for="edge" attr.name="max_accepted_HTLCs" attr.type="long" />
+  <key id="d2" for="edge" attr.name="fee" attr.type="double" />
+  <key id="d1" for="edge" attr.name="link_quality" attr.type="double" />
+  <key id="d0" for="edge" attr.name="capacity" attr.type="double" />
+  <graph edgedefault="undirected">
+    <node id="0" />
+    <node id="1" />
+    <node id="2" />
+    <node id="3" />
+    <node id="4" />
+    <node id="5" />
+    <node id="6" />
+    <node id="7" />
+    <node id="8" />
+    <node id="9" />
+    <edge source="0" target="1">
+      <data key="d0">8.792962024444567</data>
+      <data key="d1">0.32311625752567685</data>
+      <data key="d2">6.022621486113598e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+    <edge source="0" target="2">
+      <data key="d0">8.565862843522037</data>
+      <data key="d1">0.8856864195881137</data>
+      <data key="d2">5.7488952008936835e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+    <edge source="0" target="9">
+      <data key="d0">1.6280286315904802</data>
+      <data key="d1">0.3533282246669409</data>
+      <data key="d2">1.0825057404871476e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+    <edge source="2" target="3">
+      <data key="d0">9.3513155528709</data>
+      <data key="d1">0.3736648087721861</data>
+      <data key="d2">2.6960556381643997e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+    <edge source="2" target="4">
+      <data key="d0">3.176128656928845</data>
+      <data key="d1">0.8465751168144474</data>
+      <data key="d2">3.855557605711119e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+    <edge source="2" target="5">
+      <data key="d0">5.153948884124674</data>
+      <data key="d1">0.03287954038041074</data>
+      <data key="d2">9.900427187495312e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+    <edge source="2" target="6">
+      <data key="d0">4.099030725178062</data>
+      <data key="d1">0.12143746026953106</data>
+      <data key="d2">4.414692681363052e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+    <edge source="2" target="7">
+      <data key="d0">0.12570875101143963</data>
+      <data key="d1">0.44731726858763554</data>
+      <data key="d2">8.936046054258056e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+    <edge source="2" target="8">
+      <data key="d0">8.617719114210704</data>
+      <data key="d1">0.1092161834568286</data>
+      <data key="d2">7.729168414102824e-05</data>
+      <data key="d3">483</data>
+      <data key="d4">0.1</data>
+      <data key="d5">0.01</data>
+      <data key="d6">100</data>
+    </edge>
+  </graph>
+</graphml>
