@@ -41,12 +41,13 @@ def generate_topology (topology, nodes, alpha, beta, gamma, k, p, m):
 @cli.command(name='genWork', help='Generates a payment workload for the simulation')
 @click.option('--n_payments', default=1, help='Number of payments in th network simulation')
 @click.option('--min_payment', default=0.1, help='Minimum value of a payment in the network')
-@click.option('--max_payment', default=1, help='Maximum value of a payment in the network')
+@click.option('--max_payment', default=1., help='Maximum value of a payment in the network')
+@click.option('--time_window', default=5000, help='Time window (in seconds) for generating transaction timestamps')
 @click.option('--any_node', is_flag=True, help='Transactions are issued by any node in the network, not only end hosts')
-def generate_workload(n_payments, min_payment, max_payment, any_node):
+def generate_workload(n_payments, min_payment, max_payment, any_node, time_window):
     graph = read_graph()
     end_hosts = get_end_hosts_list(graph, any_node)
-    create_workload(n_payments, min_payment, max_payment, end_hosts)
+    create_workload(n_payments, min_payment, max_payment, end_hosts, time_window)
 
 if __name__ == "__main__":
     cli()

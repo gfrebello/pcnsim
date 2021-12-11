@@ -89,13 +89,13 @@ def get_end_hosts_list(graph, complete):
             end_hosts.append(node)
     return end_hosts
 
-def create_workload(n_payments, min_payment, max_payment, end_hosts):
+def create_workload(n_payments, min_payment, max_payment, end_hosts, time_window):
     payment_list = []
 
     for i in range(0,n_payments):
         pair = random.sample(end_hosts, 2)
         payment_value = random.uniform(min_payment, max_payment)
-        timestamp = random.randint(1,5000)
+        timestamp = random.randint(1,time_window)
         payment_tuple = (pair[0], pair[1], payment_value, timestamp)
         payment_list.append(payment_tuple)
 
