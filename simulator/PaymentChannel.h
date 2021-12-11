@@ -15,7 +15,7 @@ class PaymentChannel {
         double _fee;
         double _quality;
 
-        //some channel parameters defined in BOLT#2
+        // Some channel parameters defined in BOLT#2
         int _maxAcceptedHTLCs;
         double _HTLCMinimumMsat;
         int _numHTLCs;
@@ -39,7 +39,7 @@ class PaymentChannel {
         PaymentChannel() {};
         PaymentChannel(double capacity, double balance, double quality, int maxAcceptedHTLCs, int numHTLCs, double HTLCMinimumMsat, double channelReserveSatoshis, cGate* localGate, cGate *neighborGate);
 
-        // Getters and setters
+        // Generic getters and setters
          virtual double getCapacity() const { return this->_capacity; };
          virtual void setCapacity(double capacity) { this->_capacity = capacity; };
          virtual void increaseCapacity(double value) { this->_capacity = this->_capacity + value; };
@@ -58,17 +58,19 @@ class PaymentChannel {
          virtual void decreasenumHTLCs () { this->_numHTLCs = _numHTLCs - 1; };
          virtual double getChannelReserveSatoshis () const { return this->_channelReserveSatoshis; };
          virtual void setChannelReserveSatothis (double channelReserveSatoshis) { this->_channelReserveSatoshis = channelReserveSatoshis; };
+
+         // In flight functions
          virtual HTLC* getInFlight (std::string htlcId) { return this->_inFlights[htlcId]; };
          virtual void setInFlight (std::string htlcId, HTLC *htlc) { this->_inFlights[htlcId] = htlc; };
          virtual bool isInFlight (HTLC *htlc);
          virtual void removeInFlight (std::string htlcId) { this->_inFlights.erase(htlcId); };
 
+         // Pending HTLC functions
          virtual HTLC* getPendingHTLC (std::string htlcId) { return this->_pendingHTLCs[htlcId]; };
          virtual void setPendingHTLC (std::string htlcId, HTLC *htlc) { this->_pendingHTLCs[htlcId] = htlc; };
          virtual bool isPendingHTLC (HTLC *htlc);
          virtual std::map<std::string, HTLC*> getPendingHTLCs () { return this->_pendingHTLCs; };
          virtual void removePendingHTLC (std::string htlcId) { this->_committedHTLCs.erase(htlcId); };
-
          virtual std::deque<HTLC *> getPendingHTLCsFIFO () { return this->_pendingHTLCsFIFO; };
          virtual void setFirstPendingHTLCFIFO (HTLC *htlc) { this->_pendingHTLCsFIFO.push_front(htlc); };
          virtual void setLastPendingHTLCFIFO (HTLC *htlc) { this->_pendingHTLCsFIFO.push_back(htlc); };
@@ -80,12 +82,12 @@ class PaymentChannel {
          virtual void removePendingHTLCFIFOByValue (HTLC *htlc);
          virtual size_t getPendingBatchSize () { return this->_pendingHTLCsFIFO.size(); };
 
+         // Committed HTLC functions
          virtual HTLC* getCommittedHTLC (std::string htlcId) { return this->_committedHTLCs[htlcId]; };
          virtual void setCommittedHTLC (std::string htlcId, HTLC *htlc) { this->_committedHTLCs[htlcId] = htlc; };
          virtual bool isCommittedHTLC (HTLC *htlc);
          virtual std::map<std::string, HTLC*> getCommittedHTLCs () { return this->_committedHTLCs; };
          virtual void removeCommittedHTLC (std::string htlcId) { this->_pendingHTLCs.erase(htlcId); };
-
          virtual std::deque<HTLC *> getCommittedHTLCsFIFO () { return this->_committedHTLCsFIFO; };
          virtual void setFirstCommittedHTLCFIFO (HTLC * htlc) { this->_committedHTLCsFIFO.push_front(htlc); };
          virtual void setLastCommittedHTLCFIFO (HTLC * htlc) { this->_committedHTLCsFIFO.push_back(htlc); };
@@ -97,23 +99,28 @@ class PaymentChannel {
          virtual void removeCommittedHTLCFIFOByValue (HTLC * htlc);
          virtual size_t getCommittedBatchSize () { return this->_committedHTLCsFIFO.size(); };
 
-         virtual std::map<int, std::vector<HTLC *>> getAllHTLCsWaitingForAck () { return this->_HTLCsWaitingForAck; };
-         virtual std::vector<HTLC *> getHTLCsWaitingForAck (int id) { return this->_HTLCsWaitingForAck[id]; };
-         virtual void setHTLCsWaitingForAck (int id, std::vector<HTLC *> vector) { this->_HTLCsWaitingForAck[id] = vector;};
-         virtual void removeHTLCsWaitingForAck (int id) { this->_HTLCsWaitingForAck.erase(id); };
-         virtual void removeHTLCFromWaitingForAck (int id, HTLC *htlc) { this->_HTLCsWaitingForAck[id].erase(std::remove(_HTLCsWaitingForAck[id].begin(), _HTLCsWaitingForAck[id].end(), htlc), _HTLCsWaitingForAck[id].end()); };
+         // Previous hop functions
          virtual void setPreviousHopUp (std::string htlcId, std::string previousHop) { this->_previousHopUp[htlcId] = previousHop; };
          virtual std::string getPreviousHopUp (std::string htlcId) { return this->_previousHopUp[htlcId]; };
          virtual void removePreviousHopUp (std::string htlcId) { this->_previousHopUp.erase(htlcId); };
          virtual void setPreviousHopDown (std::string htlcId, std::string previousHop) { this->_previousHopDown[htlcId] = previousHop; };
          virtual std::string getPreviousHopDown (std::string htlcId) { return this->_previousHopDown[htlcId]; };
          virtual void removePreviousHopDown (std::string htlcId) { this->_previousHopDown.erase(htlcId); };
+
+         // Gate functions
          virtual cGate* getLocalGate() const { return this->_localGate; };
          virtual void setLocalGate(cGate* gate) { this->_localGate = gate; };
          virtual cGate* getNeighborGate() const { return this->_neighborGate; };
          virtual void setNeighborGate(cGate* gate) { this->_neighborGate = gate; };
+
+         // Ack functions
          virtual void setWaitingForAck (bool value) { this->_isWaitingForAck = value; };
          virtual bool isWaitingForAck() { return this->_isWaitingForAck; };
+         virtual std::map<int, std::vector<HTLC *>> getAllHTLCsWaitingForAck () { return this->_HTLCsWaitingForAck; };
+         virtual std::vector<HTLC *> getHTLCsWaitingForAck (int id) { return this->_HTLCsWaitingForAck[id]; };
+         virtual void setHTLCsWaitingForAck (int id, std::vector<HTLC *> vector) { this->_HTLCsWaitingForAck[id] = vector;};
+         virtual void removeHTLCsWaitingForAck (int id) { this->_HTLCsWaitingForAck.erase(id); };
+         virtual void removeHTLCFromWaitingForAck (int id, HTLC *htlc) { this->_HTLCsWaitingForAck[id].erase(std::remove(_HTLCsWaitingForAck[id].begin(), _HTLCsWaitingForAck[id].end(), htlc), _HTLCsWaitingForAck[id].end()); };
 
         // Auxiliary functions
         //Json::Value toJson() const;
