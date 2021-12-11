@@ -4,6 +4,7 @@ cplusplus {{
 }};
 
 packet UpdateFulfillHTLC {
+    string htlcId;
     string paymentHash;
     string preImage;
     double value;

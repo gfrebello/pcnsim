@@ -13,6 +13,16 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
+cplusplus {{
+    #include <vector>
+    #include "HTLC.h"
+    
+    typedef std::vector<HTLC *> HTLCVector;
+}};
+
+class noncobject HTLCVector;
+
 packet revokeAndAck {
-    int ackId;   
+    HTLCVector HTLCs;
+    int ackId;
 }

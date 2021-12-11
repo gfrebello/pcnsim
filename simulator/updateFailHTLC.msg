@@ -4,6 +4,7 @@ cplusplus {{
 }};
 
 packet UpdateFailHTLC {
+    string htlcId;
     string paymentHash;
     string errorReason;
     double value;

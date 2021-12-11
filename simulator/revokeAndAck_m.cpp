@@ -203,19 +203,32 @@ revokeAndAck& revokeAndAck::operator=(const revokeAndAck& other)
 
 void revokeAndAck::copy(const revokeAndAck& other)
 {
+    this->HTLCs = other.HTLCs;
     this->ackId = other.ackId;
 }
 
 void revokeAndAck::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cPacket::parsimPack(b);
+    doParsimPacking(b,this->HTLCs);
     doParsimPacking(b,this->ackId);
 }
 
 void revokeAndAck::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cPacket::parsimUnpack(b);
+    doParsimUnpacking(b,this->HTLCs);
     doParsimUnpacking(b,this->ackId);
+}
+
+HTLCVector& revokeAndAck::getHTLCs()
+{
+    return this->HTLCs;
+}
+
+void revokeAndAck::setHTLCs(const HTLCVector& HTLCs)
+{
+    this->HTLCs = HTLCs;
 }
 
 int revokeAndAck::getAckId() const
@@ -293,7 +306,7 @@ const char *revokeAndAckDescriptor::getProperty(const char *propertyname) const
 int revokeAndAckDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 1+basedesc->getFieldCount() : 1;
+    return basedesc ? 2+basedesc->getFieldCount() : 2;
 }
 
 unsigned int revokeAndAckDescriptor::getFieldTypeFlags(int field) const
@@ -305,9 +318,10 @@ unsigned int revokeAndAckDescriptor::getFieldTypeFlags(int field) const
         field -= basedesc->getFieldCount();
     }
     static unsigned int fieldTypeFlags[] = {
+        FD_ISCOMPOUND,
         FD_ISEDITABLE,
     };
-    return (field>=0 && field<1) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<2) ? fieldTypeFlags[field] : 0;
 }
 
 const char *revokeAndAckDescriptor::getFieldName(int field) const
@@ -319,16 +333,18 @@ const char *revokeAndAckDescriptor::getFieldName(int field) const
         field -= basedesc->getFieldCount();
     }
     static const char *fieldNames[] = {
+        "HTLCs",
         "ackId",
     };
-    return (field>=0 && field<1) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<2) ? fieldNames[field] : nullptr;
 }
 
 int revokeAndAckDescriptor::findField(const char *fieldName) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
-    if (fieldName[0]=='a' && strcmp(fieldName, "ackId")==0) return base+0;
+    if (fieldName[0]=='H' && strcmp(fieldName, "HTLCs")==0) return base+0;
+    if (fieldName[0]=='a' && strcmp(fieldName, "ackId")==0) return base+1;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -341,9 +357,10 @@ const char *revokeAndAckDescriptor::getFieldTypeString(int field) const
         field -= basedesc->getFieldCount();
     }
     static const char *fieldTypeStrings[] = {
+        "HTLCVector",
         "int",
     };
-    return (field>=0 && field<1) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<2) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **revokeAndAckDescriptor::getFieldPropertyNames(int field) const
@@ -410,7 +427,8 @@ std::string revokeAndAckDescriptor::getFieldValueAsString(void *object, int fiel
     }
     revokeAndAck *pp = (revokeAndAck *)object; (void)pp;
     switch (field) {
-        case 0: return long2string(pp->getAckId());
+        case 0: {std::stringstream out; out << pp->getHTLCs(); return out.str();}
+        case 1: return long2string(pp->getAckId());
         default: return "";
     }
 }
@@ -425,7 +443,7 @@ bool revokeAndAckDescriptor::setFieldValueAsString(void *object, int field, int 
     }
     revokeAndAck *pp = (revokeAndAck *)object; (void)pp;
     switch (field) {
-        case 0: pp->setAckId(string2long(value)); return true;
+        case 1: pp->setAckId(string2long(value)); return true;
         default: return false;
     }
 }
@@ -439,6 +457,7 @@ const char *revokeAndAckDescriptor::getFieldStructName(int field) const
         field -= basedesc->getFieldCount();
     }
     switch (field) {
+        case 0: return omnetpp::opp_typename(typeid(HTLCVector));
         default: return nullptr;
     };
 }
@@ -453,6 +472,7 @@ void *revokeAndAckDescriptor::getFieldStructValuePointer(void *object, int field
     }
     revokeAndAck *pp = (revokeAndAck *)object; (void)pp;
     switch (field) {
+        case 0: return (void *)(&pp->getHTLCs()); break;
         default: return nullptr;
     }
 }

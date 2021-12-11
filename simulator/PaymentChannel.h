@@ -21,11 +21,16 @@ class PaymentChannel {
         int _numHTLCs;
         double _channelReserveSatoshis;
 
-        std::map<std::string, HTLC *> _inFlights; //paymentHash to value
-        std::map<std::string, HTLC *> _pendingHTLCs; //paymentHash to pending HTLC
-        std::deque<std::string> _pendingHTLCsFIFO; //determines the order that the HTLCs were added to the pending list
+        bool _isWaitingForAck; // Auxiliary variable to check if we're waiting for an ACK in this channel
+
+        std::map<std::string, HTLC *> _inFlights; //htlcId to value
+        std::map<std::string, HTLC *> _pendingHTLCs; //htlcId to pending HTLC vector
+        std::deque<HTLC *> _pendingHTLCsFIFO; //determines the order that the HTLCs were added to the pending list
         std::map<int, std::vector<HTLC *>> _HTLCsWaitingForAck; //ackId to HTLCs waiting for ack to arrive
-        std::map<std::string, std::string> _previousHop; //paymentHash to previous Hop
+        std::map<std::string, HTLC *> _committedHTLCs; //htlcId to committed HTLC vector
+        std::deque<HTLC *> _committedHTLCsFIFO; //determines the order that the HTLCs were committed
+        std::map<std::string, std::string> _previousHopUp; //htlcId to previous Hop in the upstream direction
+        std::map<std::string, std::string> _previousHopDown; //htlcId to previous Hop in the downstream direction
 
         cGate *_localGate;
         cGate *_neighborGate;
@@ -53,33 +58,62 @@ class PaymentChannel {
          virtual void decreasenumHTLCs () { this->_numHTLCs = _numHTLCs - 1; };
          virtual double getChannelReserveSatoshis () const { return this->_channelReserveSatoshis; };
          virtual void setChannelReserveSatothis (double channelReserveSatoshis) { this->_channelReserveSatoshis = channelReserveSatoshis; };
-         virtual HTLC* getInFlight (std::string paymentHash) { return this->_inFlights[paymentHash]; };
-         virtual void setInFlight (std::string paymentHash, HTLC *htlc) { this->_inFlights[paymentHash] = htlc; };
-         virtual bool isInFlight (std::string paymentHash) { return (this->_inFlights[paymentHash] != NULL ? true : false); };
-         virtual void removeInFlight (std::string paymentHash) { this->_inFlights.erase(paymentHash); };
-         virtual HTLC* getPendingHTLC (std::string paymentHash) { return this->_pendingHTLCs[paymentHash]; };
-         virtual void setPendingHTLC (std::string paymentHash, HTLC *htlc) { this->_pendingHTLCs[paymentHash] = htlc; };
-         virtual bool isPendingHTLC (std::string paymentHash) { return (this->_pendingHTLCs[paymentHash] != NULL ? true : false); };
+         virtual HTLC* getInFlight (std::string htlcId) { return this->_inFlights[htlcId]; };
+         virtual void setInFlight (std::string htlcId, HTLC *htlc) { this->_inFlights[htlcId] = htlc; };
+         virtual bool isInFlight (HTLC *htlc);
+         virtual void removeInFlight (std::string htlcId) { this->_inFlights.erase(htlcId); };
+
+         virtual HTLC* getPendingHTLC (std::string htlcId) { return this->_pendingHTLCs[htlcId]; };
+         virtual void setPendingHTLC (std::string htlcId, HTLC *htlc) { this->_pendingHTLCs[htlcId] = htlc; };
+         virtual bool isPendingHTLC (HTLC *htlc);
          virtual std::map<std::string, HTLC*> getPendingHTLCs () { return this->_pendingHTLCs; };
-         virtual void removePendingHTLC (std::string paymentHash) { this->_pendingHTLCs.erase(paymentHash); };
-         virtual void setFirstPendingHTLCFIFO (std::string paymentHash) { this->_pendingHTLCsFIFO.push_front(paymentHash); };
-         virtual void setLastPendingHTLCFIFO (std::string paymentHash) { this->_pendingHTLCsFIFO.push_back(paymentHash); };
-         virtual std::string getFirstPendingHTLCFIFO () { return _pendingHTLCsFIFO.front(); };
-         virtual std::string getLastPendingHTLCFIFO () { return _pendingHTLCsFIFO.back(); };
+         virtual void removePendingHTLC (std::string htlcId) { this->_committedHTLCs.erase(htlcId); };
+
+         virtual std::deque<HTLC *> getPendingHTLCsFIFO () { return this->_pendingHTLCsFIFO; };
+         virtual void setFirstPendingHTLCFIFO (HTLC *htlc) { this->_pendingHTLCsFIFO.push_front(htlc); };
+         virtual void setLastPendingHTLCFIFO (HTLC *htlc) { this->_pendingHTLCsFIFO.push_back(htlc); };
+         virtual HTLC * getFirstPendingHTLCFIFO () { return _pendingHTLCsFIFO.front(); };
+         virtual HTLC * getLastPendingHTLCFIFO () { return _pendingHTLCsFIFO.back(); };
+         virtual HTLC * getPendingHTLCByIndex (int index) { return _pendingHTLCsFIFO.at(index); };
          virtual void removeFirstPendingHTLCFIFO () { this->_pendingHTLCsFIFO.pop_front(); };
          virtual void removeLastPendingHTLCFIFO () { this->_pendingHTLCsFIFO.pop_back(); };
-         virtual void removePendingHTLCFIFOByValue (std::string paymentHash) { this->_pendingHTLCsFIFO.erase(std::remove(_pendingHTLCsFIFO.begin(), _pendingHTLCsFIFO.end(), paymentHash), _pendingHTLCsFIFO.end()); };
+         virtual void removePendingHTLCFIFOByValue (HTLC *htlc);
          virtual size_t getPendingBatchSize () { return this->_pendingHTLCsFIFO.size(); };
+
+         virtual HTLC* getCommittedHTLC (std::string htlcId) { return this->_committedHTLCs[htlcId]; };
+         virtual void setCommittedHTLC (std::string htlcId, HTLC *htlc) { this->_committedHTLCs[htlcId] = htlc; };
+         virtual bool isCommittedHTLC (HTLC *htlc);
+         virtual std::map<std::string, HTLC*> getCommittedHTLCs () { return this->_committedHTLCs; };
+         virtual void removeCommittedHTLC (std::string htlcId) { this->_pendingHTLCs.erase(htlcId); };
+
+         virtual std::deque<HTLC *> getCommittedHTLCsFIFO () { return this->_committedHTLCsFIFO; };
+         virtual void setFirstCommittedHTLCFIFO (HTLC * htlc) { this->_committedHTLCsFIFO.push_front(htlc); };
+         virtual void setLastCommittedHTLCFIFO (HTLC * htlc) { this->_committedHTLCsFIFO.push_back(htlc); };
+         virtual HTLC * getFirstCommittedHTLCFIFO () { return _committedHTLCsFIFO.front(); };
+         virtual HTLC * getLastCommittedHTLCFIFO () { return _committedHTLCsFIFO.back(); };
+         virtual HTLC * getCommittedHTLCByIndex (int index) { return _committedHTLCsFIFO.at(index); };
+         virtual void removeFirstCommittedHTLCFIFO () { this->_committedHTLCsFIFO.pop_front(); };
+         virtual void removeLastCommittedHTLCFIFO () { this->_committedHTLCsFIFO.pop_back(); };
+         virtual void removeCommittedHTLCFIFOByValue (HTLC * htlc);
+         virtual size_t getCommittedBatchSize () { return this->_committedHTLCsFIFO.size(); };
+
+         virtual std::map<int, std::vector<HTLC *>> getAllHTLCsWaitingForAck () { return this->_HTLCsWaitingForAck; };
          virtual std::vector<HTLC *> getHTLCsWaitingForAck (int id) { return this->_HTLCsWaitingForAck[id]; };
          virtual void setHTLCsWaitingForAck (int id, std::vector<HTLC *> vector) { this->_HTLCsWaitingForAck[id] = vector;};
          virtual void removeHTLCsWaitingForAck (int id) { this->_HTLCsWaitingForAck.erase(id); };
-         virtual void setPreviousHop (std::string paymentHash, std::string previousHop) { this->_previousHop[paymentHash] = previousHop; };
-         virtual std::string getPreviousHop (std::string paymentHash) { return this->_previousHop[paymentHash]; };
-         virtual void removePreviousHop (std::string paymentHash) { this->_previousHop.erase(paymentHash); };
+         virtual void removeHTLCFromWaitingForAck (int id, HTLC *htlc) { this->_HTLCsWaitingForAck[id].erase(std::remove(_HTLCsWaitingForAck[id].begin(), _HTLCsWaitingForAck[id].end(), htlc), _HTLCsWaitingForAck[id].end()); };
+         virtual void setPreviousHopUp (std::string htlcId, std::string previousHop) { this->_previousHopUp[htlcId] = previousHop; };
+         virtual std::string getPreviousHopUp (std::string htlcId) { return this->_previousHopUp[htlcId]; };
+         virtual void removePreviousHopUp (std::string htlcId) { this->_previousHopUp.erase(htlcId); };
+         virtual void setPreviousHopDown (std::string htlcId, std::string previousHop) { this->_previousHopDown[htlcId] = previousHop; };
+         virtual std::string getPreviousHopDown (std::string htlcId) { return this->_previousHopDown[htlcId]; };
+         virtual void removePreviousHopDown (std::string htlcId) { this->_previousHopDown.erase(htlcId); };
          virtual cGate* getLocalGate() const { return this->_localGate; };
          virtual void setLocalGate(cGate* gate) { this->_localGate = gate; };
          virtual cGate* getNeighborGate() const { return this->_neighborGate; };
          virtual void setNeighborGate(cGate* gate) { this->_neighborGate = gate; };
+         virtual void setWaitingForAck (bool value) { this->_isWaitingForAck = value; };
+         virtual bool isWaitingForAck() { return this->_isWaitingForAck; };
 
         // Auxiliary functions
         //Json::Value toJson() const;
@@ -114,15 +148,51 @@ void PaymentChannel::copy(const PaymentChannel& other) {
     this->_neighborGate = other._neighborGate;
 }
 
-//
-//Json::Value PaymentChannel::toJson() const {
-//    Json::Value json(Json::objectValue);
-//    json["capacity"] = std::to_string(this->_capacity);
-//    json["fee"] = std::to_string(this->_fee);
-//    json["quality"] = std::to_string(this->_quality);
-//    json["maxAcceptedHLTCs"] = std::to_string(this->_maxAcceptedHTLCs);
-//    json["HTLCMinimumMsat"] = std::to_string(this->_HTLCMinimumMsat);
-//    return json;
-//}
+bool PaymentChannel::isPendingHTLC (HTLC *htlc) {
+    std::string htlcId = htlc->getPaymentHash() + ":" + std::to_string(htlc->getType());
+    if(!_pendingHTLCs[htlcId]) {
+        // Remove the null pointer we just added
+        removePendingHTLC(htlcId);
+        return false;
+    } else {
+        return true;
+    }
+}
 
+bool PaymentChannel::isCommittedHTLC (HTLC *htlc) {
+    std::string htlcId = htlc->getPaymentHash() + ":" + std::to_string(htlc->getType());
+    if(!_committedHTLCs[htlcId]) {
+        // Remove the null pointer we just added
+        removeCommittedHTLC(htlcId);
+        return false;
+    } else {
+        return true;
+    }
+}
 
+bool PaymentChannel::isInFlight (HTLC *htlc) {
+    std::string htlcId = htlc->getPaymentHash() + ":" + std::to_string(htlc->getType());
+    if (!_inFlights[htlcId]) {
+        // Remove the null pointer we just added
+        removeInFlight(htlcId);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+void PaymentChannel::removePendingHTLCFIFOByValue (HTLC *htlc) {
+    for (auto it = _pendingHTLCsFIFO.begin(); it < _pendingHTLCsFIFO.end(); it++) {
+        HTLC *pendingHTLC = *it;
+        if (pendingHTLC->getHtlcId() == htlc->getHtlcId())
+            _pendingHTLCsFIFO.erase(it);
+    }
+}
+
+void PaymentChannel::removeCommittedHTLCFIFOByValue (HTLC *htlc) {
+    for (auto it = _committedHTLCsFIFO.begin(); it < _committedHTLCsFIFO.end(); it++) {
+        HTLC *committedHTLC = *it;
+        if (committedHTLC->getHtlcId() == htlc->getHtlcId())
+            _committedHTLCsFIFO.erase(it);
+    }
+}

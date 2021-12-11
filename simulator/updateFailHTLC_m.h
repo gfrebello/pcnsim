@@ -28,6 +28,7 @@
  * <pre>
  * packet UpdateFailHTLC
  * {
+ *     string htlcId;
  *     string paymentHash;
  *     string errorReason;
  *     double value;
@@ -37,6 +38,7 @@
 class UpdateFailHTLC : public ::omnetpp::cPacket
 {
   protected:
+    ::omnetpp::opp_string htlcId;
     ::omnetpp::opp_string paymentHash;
     ::omnetpp::opp_string errorReason;
     double value;
@@ -58,6 +60,8 @@ class UpdateFailHTLC : public ::omnetpp::cPacket
     virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
 
     // field getter/setter methods
+    virtual const char * getHtlcId() const;
+    virtual void setHtlcId(const char * htlcId);
     virtual const char * getPaymentHash() const;
     virtual void setPaymentHash(const char * paymentHash);
     virtual const char * getErrorReason() const;

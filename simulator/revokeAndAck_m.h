@@ -18,11 +18,19 @@
 
 
 
+// cplusplus {{
+    #include <vector>
+    #include "HTLC.h"
+    
+    typedef std::vector<HTLC *> HTLCVector;
+// }}
+
 /**
- * Class generated from <tt>revokeAndAck.msg:16</tt> by nedtool.
+ * Class generated from <tt>revokeAndAck.msg:25</tt> by nedtool.
  * <pre>
  * packet revokeAndAck
  * {
+ *     HTLCVector HTLCs;
  *     int ackId;
  * }
  * </pre>
@@ -30,6 +38,7 @@
 class revokeAndAck : public ::omnetpp::cPacket
 {
   protected:
+    HTLCVector HTLCs;
     int ackId;
 
   private:
@@ -49,6 +58,9 @@ class revokeAndAck : public ::omnetpp::cPacket
     virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
 
     // field getter/setter methods
+    virtual HTLCVector& getHTLCs();
+    virtual const HTLCVector& getHTLCs() const {return const_cast<revokeAndAck*>(this)->getHTLCs();}
+    virtual void setHTLCs(const HTLCVector& HTLCs);
     virtual int getAckId() const;
     virtual void setAckId(int ackId);
 };

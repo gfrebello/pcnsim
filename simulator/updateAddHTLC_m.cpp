@@ -205,6 +205,7 @@ UpdateAddHTLC& UpdateAddHTLC::operator=(const UpdateAddHTLC& other)
 void UpdateAddHTLC::copy(const UpdateAddHTLC& other)
 {
     this->source = other.source;
+    this->htlcId = other.htlcId;
     this->paymentHash = other.paymentHash;
     this->timeout = other.timeout;
     this->value = other.value;
@@ -214,6 +215,7 @@ void UpdateAddHTLC::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::omnetpp::cPacket::parsimPack(b);
     doParsimPacking(b,this->source);
+    doParsimPacking(b,this->htlcId);
     doParsimPacking(b,this->paymentHash);
     doParsimPacking(b,this->timeout);
     doParsimPacking(b,this->value);
@@ -223,6 +225,7 @@ void UpdateAddHTLC::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::omnetpp::cPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->source);
+    doParsimUnpacking(b,this->htlcId);
     doParsimUnpacking(b,this->paymentHash);
     doParsimUnpacking(b,this->timeout);
     doParsimUnpacking(b,this->value);
@@ -236,6 +239,16 @@ const char * UpdateAddHTLC::getSource() const
 void UpdateAddHTLC::setSource(const char * source)
 {
     this->source = source;
+}
+
+const char * UpdateAddHTLC::getHtlcId() const
+{
+    return this->htlcId.c_str();
+}
+
+void UpdateAddHTLC::setHtlcId(const char * htlcId)
+{
+    this->htlcId = htlcId;
 }
 
 const char * UpdateAddHTLC::getPaymentHash() const
@@ -333,7 +346,7 @@ const char *UpdateAddHTLCDescriptor::getProperty(const char *propertyname) const
 int UpdateAddHTLCDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 4+basedesc->getFieldCount() : 4;
+    return basedesc ? 5+basedesc->getFieldCount() : 5;
 }
 
 unsigned int UpdateAddHTLCDescriptor::getFieldTypeFlags(int field) const
@@ -349,8 +362,9 @@ unsigned int UpdateAddHTLCDescriptor::getFieldTypeFlags(int field) const
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<5) ? fieldTypeFlags[field] : 0;
 }
 
 const char *UpdateAddHTLCDescriptor::getFieldName(int field) const
@@ -363,11 +377,12 @@ const char *UpdateAddHTLCDescriptor::getFieldName(int field) const
     }
     static const char *fieldNames[] = {
         "source",
+        "htlcId",
         "paymentHash",
         "timeout",
         "value",
     };
-    return (field>=0 && field<4) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<5) ? fieldNames[field] : nullptr;
 }
 
 int UpdateAddHTLCDescriptor::findField(const char *fieldName) const
@@ -375,9 +390,10 @@ int UpdateAddHTLCDescriptor::findField(const char *fieldName) const
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
     if (fieldName[0]=='s' && strcmp(fieldName, "source")==0) return base+0;
-    if (fieldName[0]=='p' && strcmp(fieldName, "paymentHash")==0) return base+1;
-    if (fieldName[0]=='t' && strcmp(fieldName, "timeout")==0) return base+2;
-    if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+3;
+    if (fieldName[0]=='h' && strcmp(fieldName, "htlcId")==0) return base+1;
+    if (fieldName[0]=='p' && strcmp(fieldName, "paymentHash")==0) return base+2;
+    if (fieldName[0]=='t' && strcmp(fieldName, "timeout")==0) return base+3;
+    if (fieldName[0]=='v' && strcmp(fieldName, "value")==0) return base+4;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -392,10 +408,11 @@ const char *UpdateAddHTLCDescriptor::getFieldTypeString(int field) const
     static const char *fieldTypeStrings[] = {
         "string",
         "string",
+        "string",
         "simtime_t",
         "double",
     };
-    return (field>=0 && field<4) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<5) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **UpdateAddHTLCDescriptor::getFieldPropertyNames(int field) const
@@ -463,9 +480,10 @@ std::string UpdateAddHTLCDescriptor::getFieldValueAsString(void *object, int fie
     UpdateAddHTLC *pp = (UpdateAddHTLC *)object; (void)pp;
     switch (field) {
         case 0: return oppstring2string(pp->getSource());
-        case 1: return oppstring2string(pp->getPaymentHash());
-        case 2: return simtime2string(pp->getTimeout());
-        case 3: return double2string(pp->getValue());
+        case 1: return oppstring2string(pp->getHtlcId());
+        case 2: return oppstring2string(pp->getPaymentHash());
+        case 3: return simtime2string(pp->getTimeout());
+        case 4: return double2string(pp->getValue());
         default: return "";
     }
 }
@@ -481,9 +499,10 @@ bool UpdateAddHTLCDescriptor::setFieldValueAsString(void *object, int field, int
     UpdateAddHTLC *pp = (UpdateAddHTLC *)object; (void)pp;
     switch (field) {
         case 0: pp->setSource((value)); return true;
-        case 1: pp->setPaymentHash((value)); return true;
-        case 2: pp->setTimeout(string2simtime(value)); return true;
-        case 3: pp->setValue(string2double(value)); return true;
+        case 1: pp->setHtlcId((value)); return true;
+        case 2: pp->setPaymentHash((value)); return true;
+        case 3: pp->setTimeout(string2simtime(value)); return true;
+        case 4: pp->setValue(string2double(value)); return true;
         default: return false;
     }
 }

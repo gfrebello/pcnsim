@@ -170,7 +170,7 @@ void NetBuilder::buildNetwork(cModule *parent) {
         connect(srcOut, dstIn, linkDelay);
 
         // Define link weights
-        double weight = capacity;
+        double weight = 1/capacity;
 
         // Add link to links buffer (we use a buffer because we can`t safely add links before all modules are built)
         cTopology::Link *link = new cTopology::Link(weight);
