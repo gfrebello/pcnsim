@@ -4,7 +4,7 @@
 cTopology *globalTopology = new cTopology("globalTopology");
 std::map< std::string, std::vector< std::tuple<std::string, double, simtime_t> > > pendingPayments;
 std::map< std::string, std::map<std::string, std::tuple<double, double, double, int, double, double, cGate*, cGate*> > > nameToPCs;
-std::map< std::string, std::vector< std::pair<std::string, double> > > adjMatrix;
+std::map< std::string, std::vector< std::pair<std::string, std::vector<double> > > > adjMatrix;
 
 class NetBuilder : public cSimpleModule {
     public:
@@ -84,7 +84,6 @@ void NetBuilder::initWorkload() {
     }
 
 }
-
 
 void NetBuilder::buildNetwork(cModule *parent) {
 
@@ -171,6 +170,7 @@ void NetBuilder::buildNetwork(cModule *parent) {
 
         // Define link weights
         double weight = 1/capacity;
+        std::vector<double> weightVector{capacity, fee, linkQuality};
 
         // Add link to links buffer (we use a buffer because we can`t safely add links before all modules are built)
         cTopology::Link *link = new cTopology::Link(weight);
@@ -180,7 +180,7 @@ void NetBuilder::buildNetwork(cModule *parent) {
         //Initialize payment channels and add nodes to adjacency matrix
         auto pc = std::make_tuple(capacity, fee, linkQuality, maxAcceptedHTLCs, HTLCMinimumMsat, channelReserveSatoshis, srcOut, dstIn);
         nameToPCs[srcName][dstName] = pc;
-        adjMatrix[srcName].push_back(std::make_pair(dstName,weight));
+        adjMatrix[srcName].push_back(std::make_pair(dstName, weightVector));
 
     }
 

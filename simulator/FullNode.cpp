@@ -23,11 +23,12 @@ class FullNode : public cSimpleModule {
         virtual void initialize() override;
         virtual void handleMessage(cMessage *msg) override;
         virtual void refreshDisplay() const;
+        virtual void finish() override;
 
         // Routing functions
         virtual std::vector<std::string> getPath(std::map<std::string, std::string> parents, std::string target);
         virtual std::string minDistanceNode (std::map<std::string, double> distances, std::map<std::string, bool> visited);
-        virtual std::vector<std::string> dijkstraWeightedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph);
+        virtual std::vector<std::string> dijkstraWeightedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, std::vector<double> > > > graph);
 
         // Message handlers
         virtual void initHandler (BaseMessage *baseMsg);
@@ -47,6 +48,11 @@ class FullNode : public cSimpleModule {
         virtual void commitUpdateAddHTLC (HTLC *htlc, std::string neighbor);
         virtual void commitUpdateFulfillHTLC (HTLC *htlc, std::string neighbor);
         virtual void commitUpdateFailHTLC (HTLC *htlc, std::string neighbor);
+        virtual void commitHTLC(HTLC *htlc, std::string neighbor);
+
+        // Statistics
+        // virtual void initStatistics();
+        virtual void initPerModuleStatistics();
 
         // Util functions
         virtual bool tryUpdatePaymentChannel (std::string nodeName, double value, bool increase);
@@ -67,6 +73,14 @@ class FullNode : public cSimpleModule {
         RoutingTable rtable;
         std::map<std::string, PaymentChannel> _paymentChannels; // neighborName to PaymentChannel
         std::map<std::string, int> _signals; // myName to signal
+
+        // Statistic-related variables
+        int _countCompleted = 0;
+        int _countFailed = 0;
+        int _countCanceled = 0;
+        double _paymentGoodputSent = 0;
+        double _paymentGoodputAll = 0;
+
 };
 
 // Define module and initialize random number generator
@@ -101,17 +115,19 @@ void FullNode::initialize() {
         PaymentChannel pc = PaymentChannel(capacity, fee, quality, maxAcceptedHTLCs, numHTLCs, HTLCMinimumMsat, channelReserveSatoshis, localGate, neighborGate);
         _paymentChannels[neighborName] = pc;
 
-        // Register signals and statistics
-        std::string signalName = myName +"-to-" + neighborName + ":capacity";
-        simsignal_t signal = registerSignal(signalName.c_str());
-        _signals[signalName] = signal;
-        emit(_signals[signalName], _paymentChannels[neighborName]._capacity);
+        // Register per channel statistics
+            std::string signalName = myName +"-to-" + neighborName + ":capacity";
+            simsignal_t signal = registerSignal(signalName.c_str());
+            _signals[signalName] = signal;
+            emit(_signals[signalName], _paymentChannels[neighborName]._capacity);
 
-        std::string statisticName = myName +"-to-" + neighborName + ":capacity";
-        cProperty *statisticTemplate = getProperties()->get("statisticTemplate", "pcCapacities");
-        getEnvir()->addResultRecorders(this, signal, statisticName.c_str(), statisticTemplate);
+            std::string statisticName = myName +"-to-" + neighborName + ":capacity";
+            cProperty *statisticTemplate = getProperties()->get("statisticTemplate", "pcCapacities");
+            getEnvir()->addResultRecorders(this, signal, statisticName.c_str(), statisticTemplate);
     }
 
+    // Initialize per module statistics
+    initPerModuleStatistics();
 
     // Build routing table
     cTopology::Node *thisNode = _localTopology->getNodeFor(this);
@@ -223,6 +239,34 @@ void FullNode::refreshDisplay() const {
     }
 }
 
+void FullNode::finish() {
+
+    std::string myName = getName();
+    int countCompleted = 0;
+    int countFailed = 0;
+    int countCanceled = 0;
+
+    for (auto const & payment :_myPayments) {
+        if (payment.second == "COMPLETED")
+            countCompleted++;
+        else if (payment.second == "FAILED")
+            countFailed++;
+        else if (payment.second == "CANCELED")
+            countCanceled++;
+        else
+            continue;
+    }
+
+    int countTotal = countCompleted + countFailed + countCanceled;
+
+    if (countTotal != 0 ) {
+        EV << "------------------ Statistics for node " + myName + "------------------\n";
+        double goodput = (double(countCompleted)/double(countFailed+countCompleted));
+        EV << "COMPLETED/FAILED/CANCELED: " + std::to_string(countCompleted) + "/" + std::to_string(countFailed) + "/" + std::to_string(countCanceled) + "\n";
+        EV << "Goodput: " +  std::to_string(goodput) + "\n";
+    }
+}
+
 
 /***********************************************************************************************************************/
 /* ROUTING FUNCTIONS                                                                                                   */
@@ -271,7 +315,7 @@ std::vector<std::string> FullNode::getPath (std::map<std::string, std::string> p
     return path;
 }
 
-std::vector<std::string> FullNode::dijkstraWeightedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, double> > > graph) {
+std::vector<std::string> FullNode::dijkstraWeightedShortestPath (std::string src, std::string target, std::map<std::string, std::vector<std::pair<std::string, std::vector<double> > > > graph) {
     // This function returns the Dijkstra's shortest path from a source to some target given an adjacency matrix
 
     int numNodes = graph.size();
@@ -294,12 +338,19 @@ std::vector<std::string> FullNode::dijkstraWeightedShortestPath (std::string src
         std::string node = minDistanceNode(distances, visited);
         visited[node] = true;
 
-        std::vector<std::pair<std::string,double>>::iterator it;
+        std::vector<std::pair<std::string,std::vector<double>>>::iterator it;
 
         // Update distance value of neighbor nodes of the current node
         for (it = graph[node].begin(); it != graph[node].end(); it++){
             std::string neighbor = it->first;
-            double linkWeight = it->second;
+            std::vector<double> weightVector = it->second;
+            double capacity = weightVector[0];
+            double fee = weightVector[1];
+            double linkQuality = weightVector[2];
+
+            // Define weight as a combination of parameters in the weightVector
+            double linkWeight = 1/capacity;
+
             if (!visited[neighbor]) {
                 if(distances[node] + linkWeight < distances[neighbor]) {
                     parents[neighbor] = node;
@@ -363,6 +414,13 @@ void FullNode::invoiceHandler (BaseMessage *baseMsg) {
    if (!hasCapacityToForward(firstHop, value)) {
        _myPayments[paymentHash] = "CANCELED";
        EV << "WARNING: Canceling payment " + paymentHash + " on node " + myName + " due to insufficient funds in the first hop.\n";
+
+       _countCanceled++;
+       _paymentGoodputAll = double(_countCompleted)/double(_countCompleted + _countFailed + _countCanceled);
+
+       emit(_signals["canceledPayments"], _countCanceled);
+       emit(_signals["paymentGoodputAll"], _paymentGoodputAll);
+
        return;
    }
 
@@ -1072,30 +1130,17 @@ void FullNode::commitUpdateAddHTLC (HTLC *htlc, std::string neighbor) {
 
         // If we are the destination, commit and trigger first UPDATE_FULFILL_HTLC function
         if (!_myPreImages[paymentHash].empty()) {
-            _paymentChannels[neighbor].removePendingHTLC(htlcId);
-            _paymentChannels[neighbor].removePendingHTLCFIFOByValue(htlc);
-            _paymentChannels[neighbor].setCommittedHTLC(htlcId, htlc);
-            _paymentChannels[neighbor].setLastCommittedHTLCFIFO(htlc);
-
+            commitHTLC(htlc, neighbor);
             sendFirstFulfillHTLC(htlc, neighbor);
 
         // Otherwise just commit
         } else {
-            // Remove from pending list and queue
-            _paymentChannels[neighbor].removePendingHTLC(htlcId);
-            _paymentChannels[neighbor].removePendingHTLCFIFOByValue(htlc);
-            _paymentChannels[neighbor].setCommittedHTLC(htlcId, htlc);
-            _paymentChannels[neighbor].setLastCommittedHTLCFIFO(htlc);
+            commitHTLC(htlc, neighbor);
         }
     // If our neighbor is the HTLC's next hop, we must set it as in flight and decrement the channel balance
     } else if (_paymentChannels[neighbor].getPreviousHopUp(htlcId) == myName) {
         setInFlight(htlc, neighbor);
-
-        // Remove from pending list and queue
-        _paymentChannels[neighbor].removePendingHTLC(htlcId);
-        _paymentChannels[neighbor].removePendingHTLCFIFOByValue(htlc);
-        _paymentChannels[neighbor].setCommittedHTLC(htlcId, htlc);
-        _paymentChannels[neighbor].setLastCommittedHTLCFIFO(htlc);
+        commitHTLC(htlc, neighbor);
 
     // If either case is satisfied, this is unexpected behavior
     } else {
@@ -1118,30 +1163,27 @@ void FullNode::commitUpdateFulfillHTLC (HTLC *htlc, std::string neighbor) {
     // If our neighbor is the fulfill's previous hop, we must remove the in flight HTLCs
     if (_paymentChannels[neighbor].getPreviousHopDown(htlcId) == neighbor) {
         _paymentChannels[neighbor].removeInFlight(htlcId);
-
-        // Remove from pending list and queue
-        _paymentChannels[neighbor].removePendingHTLC(htlcId);
-        _paymentChannels[neighbor].removePendingHTLCFIFOByValue(htlc);
-        _paymentChannels[neighbor].setCommittedHTLC(htlcId, htlc);
-        _paymentChannels[neighbor].setLastCommittedHTLCFIFO(htlc);
+        commitHTLC(htlc, neighbor);
 
         // If we are the destination, the payment has completed successfully
         if(_myPayments[paymentHash] == "PENDING") {
             bubble("Payment completed!");
             EV << "Payment " + paymentHash + " completed!\n";
+
             _myPayments[paymentHash] = "COMPLETED";
+            _countCompleted++;
+            _paymentGoodputSent = double(_countCompleted)/double(_countCompleted + _countFailed);
+            _paymentGoodputAll = double(_countCompleted)/double(_countCompleted + _countFailed + _countCanceled);
+
+            emit(_signals["completedPayments"], _countCompleted);
+            emit(_signals["paymentGoodputSent"], _paymentGoodputSent);
+            emit(_signals["paymentGoodputAll"], _paymentGoodputAll);
         }
 
         // If we are the fulfill's previous hop, we should claim our money
     } else if (_paymentChannels[neighbor].getPreviousHopDown(htlcId) == myName) {
-
-        // Remove from pending list and queue
-        _paymentChannels[neighbor].removePendingHTLC(htlcId);
-        _paymentChannels[neighbor].removePendingHTLCFIFOByValue(htlc);
-        _paymentChannels[neighbor].setCommittedHTLC(htlcId, htlc);
-        _paymentChannels[neighbor].setLastCommittedHTLCFIFO(htlc);
-
         tryUpdatePaymentChannel(neighbor, value, true);
+        commitHTLC(htlc, neighbor);
 
     // If either case is satisfied, this is unexpected behavior
     } else {
@@ -1163,38 +1205,83 @@ void FullNode::commitUpdateFailHTLC (HTLC *htlc, std::string neighbor) {
     // If our neighbor is the fail's previous hop, we should we must remove the in flight HTLCs and claim our money back
     if (_paymentChannels[neighbor].getPreviousHopDown(htlcId) == neighbor) {
         _paymentChannels[neighbor].removeInFlight(htlcId);
-
-        // Remove from pending list and queue
-        _paymentChannels[neighbor].removePendingHTLC(htlcId);
-        _paymentChannels[neighbor].removePendingHTLCFIFOByValue(htlc);
-        _paymentChannels[neighbor].setCommittedHTLC(htlcId, htlc);
-        _paymentChannels[neighbor].setLastCommittedHTLCFIFO(htlc);
-
         tryUpdatePaymentChannel(neighbor, value, true);
+        commitHTLC(htlc, neighbor);
 
-        EV << "Claiming HTLC back. Value: " + std::to_string(value) + "\n.";
+        EV << "Claimed HTLC back. Value: " + std::to_string(value) + "\n.";
 
-
-        // If we are the destination, the payment has failed successfully
+        // If we are the destination, the payment has failed
         if(_myPayments[paymentHash] == "PENDING") {
             bubble("Payment failed!");
             EV << "Payment " + paymentHash + " failed!\n";
-            _myPayments[paymentHash] = "FAIL";
+            _myPayments[paymentHash] = "FAILED";
+
+            _countFailed++;
+            _paymentGoodputSent = double(_countCompleted)/double(_countCompleted + _countFailed);
+            _paymentGoodputAll = double(_countCompleted)/double(_countCompleted + _countFailed + _countCanceled);
+
+            emit(_signals["failedPayments"], _countFailed);
+            emit(_signals["paymentGoodputSent"], _paymentGoodputSent);
+            emit(_signals["paymentGoodputAll"], _paymentGoodputAll);
         }
 
     // If our neighbor is the fails's next hop, just remove from pending (the updates have been applied in the sender node)
     } else if (_paymentChannels[neighbor].getPreviousHopDown(htlcId) == myName) {
-
-        // Remove from pending list and queue
-        _paymentChannels[neighbor].removePendingHTLC(htlcId);
-        _paymentChannels[neighbor].removePendingHTLCFIFOByValue(htlc);
-        _paymentChannels[neighbor].setCommittedHTLC(htlcId, htlc);
-        _paymentChannels[neighbor].setLastCommittedHTLCFIFO(htlc);
+        commitHTLC(htlc, neighbor);
 
     // If either case is satisfied, this is unexpected behavior
     } else {
         throw std::invalid_argument("ERROR: Could not commit UPDATE_FAIL_HTLC. Reason: previousHop unknown.");
     }
+}
+
+void FullNode::commitHTLC (HTLC *htlc, std::string neighbor) {
+    // Removes HTLC from pending list and adds it to the commited HTLCs
+
+    std::string htlcId = htlc->getHtlcId();
+    _paymentChannels[neighbor].removePendingHTLC(htlcId);
+    _paymentChannels[neighbor].removePendingHTLCFIFOByValue(htlc);
+    _paymentChannels[neighbor].setCommittedHTLC(htlcId, htlc);
+    _paymentChannels[neighbor].setLastCommittedHTLCFIFO(htlc);
+}
+
+
+/***********************************************************************************************************************/
+/* STATISTICS                                                                                                          */
+/***********************************************************************************************************************/
+
+//void FullNode::initStatistics() {
+//    // Register signals and statistics for producing simulaton results
+//
+//    // Per channel statistics
+//
+//    std::string signalName = myName +"-to-" + neighborName + ":capacity";
+//    simsignal_t signal = registerSignal(signalName.c_str());
+//    _signals[signalName] = signal;
+//    emit(_signals[signalName], _paymentChannels[neighborName]._capacity);
+//
+//    std::string statisticName = myName +"-to-" + neighborName + ":capacity";
+//    cProperty *statisticTemplate = getProperties()->get("statisticTemplate", "pcCapacities");
+//    getEnvir()->addResultRecorders(this, signal, statisticName.c_str(), statisticTemplate);
+//}
+
+void FullNode::initPerModuleStatistics () {
+    // Registers all statistics that do not depend on payment channels
+
+    simsignal_t completedPayments = registerSignal("completedPayments");
+    _signals["completedPayments"] = completedPayments;
+
+    simsignal_t failedPayments = registerSignal("failedPayments");
+    _signals["failedPayments"] = failedPayments;
+
+    simsignal_t canceledPayments = registerSignal("canceledPayments");
+    _signals["canceledPayments"] = canceledPayments;
+
+    simsignal_t paymentGoodputSent = registerSignal("paymentGoodputSent");
+    _signals["paymentGoodputSent"] = paymentGoodputSent;
+
+    simsignal_t paymentGoodputAll = registerSignal("paymentGoodputAll");
+    _signals["paymentGoodputAll"] = paymentGoodputAll;
 }
 
 
@@ -1358,7 +1445,6 @@ bool FullNode::isInFlight(HTLC *htlc, std::string nextHop) {
     else
         return true;
 }
-
 
 std::vector <HTLC *> FullNode::getSortedPendingHTLCs (std::vector<HTLC *> HTLCs, std::string neighbor) {
     // Util function that receies a vector of HTLCs and sorts them according to the local order
