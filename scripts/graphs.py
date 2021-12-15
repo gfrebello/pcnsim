@@ -1,6 +1,6 @@
 import networkx as nx
 
-FILENAME = 'current-graph'
+FILENAME = '../topologies/topology'
 
 def generate_scale_free(n, alpha, beta, gamma):
     graph = nx.scale_free_graph(n, alpha, beta, gamma)
@@ -15,8 +15,10 @@ def generate_barabasi_albert(n, m):
     return graph
 
 def save_graph(graph):
-    nx.write_graphml(graph, FILENAME)
+    #nx.write_graphml(graph, FILENAME)
+    pass
 
 def read_graph():
-    graph = nx.read_graphml(FILENAME)
+    attrib_list = ['capacity','link_quality','fee','max_accepted_HTLCs','HTLC_minimum_msat','channel_reserve_satoshis', 'delay']
+    graph = nx.read_edgelist(FILENAME, data=(("capacity",float),("link_quality", float), ("fee", float), ("max_accepted_HTLCs", int), ("HTLC_minimum_msat",float), ("channel_reserve_satoshis", float), ("delay", int)))
     return graph
