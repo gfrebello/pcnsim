@@ -37,6 +37,7 @@ def adjust_edges (graph):
 
 # Initialize channel attributes
 def initialize_attributes(graph, lightning, multigraph):
+    n_edges = graph.number_of_edges()
     if (lightning):
         lightning_capacity = get_channel_stats('capacity')
         selected_capacities = get_random_statistics(lightning_capacity, graph.number_of_edges())
@@ -66,7 +67,6 @@ def initialize_attributes(graph, lightning, multigraph):
 
 
     attrib_list = ['capacity','link_quality','fee','max_accepted_HTLCs','HTLC_minimum_msat','channel_reserve_satoshis','delay']
-    n_edges = graph.number_of_edges()
     attribs = collections.defaultdict(dict)
     link_qualities = generate_random_list(n_edges, min_value=0, max_value=1)
     max_accepted_HTLCs = [483] * n_edges
