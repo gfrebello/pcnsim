@@ -1,4 +1,0 @@
-# genTopo
-
-## Description
-The `genTopo` command generates a network topology to be used in the payment channel network simulator.
