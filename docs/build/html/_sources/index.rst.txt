@@ -11,16 +11,10 @@ Welcome to PCNsim's documentation!
 A reliable and modular open-source payment channel network simulator based on the Lightning Network.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   getting_started
+   commands
+   FAQ
 
 .. note:: If you still have questions about PCNsim not covered by this documentation, please visit https://gta.ufrj.br/pcnsim webpage to find contact information for additional help.
