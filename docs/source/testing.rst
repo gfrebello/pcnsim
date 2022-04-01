@@ -35,6 +35,8 @@ To generate the transaction workload of our scenario, run the `genWork`command s
 
 This command generates a file in the `workloads` directory.
 
+.. note:: For more information on the commands and their options, check the :doc:`commands` section of the documentation.
+
 Running the Simulation
 ----------------------
 After generating the topology and workload, you can run PCNsim by opening the project on OMNET++ and running the simulation.
