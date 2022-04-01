@@ -1,21 +1,20 @@
 Installing PCNsim
 =================
 
-
 After checking if you meet the correct requirements of PCNsim, you can install install PCNsim.
 
 First, clone our Github respository: ::
 
-    git clone https://github.com/gfrebello/pcnsim
+    $ git clone https://github.com/gfrebello/pcnsim
 
 After cloning the repository, install the necessary libraries to run PCNsim: ::
 
-    cd pcnsim
-    pip install -r requirements.txt
+    $ cd pcnsim
+    $ pip install -r requirements.txt
 
 You may want to create a environment variable that points to the pcnsim source directory: ::
 
-    export PCNSIM_DIR = $PWD
+    $ export PCNSIM_DIR = $PWD
 
 Installing the Dataset
 ----------------------
@@ -24,6 +23,6 @@ The credit-card dataset used to model transactions in PCNSim is available at `Ka
 
 After downloading the creditcard dataset, move the csv file to the datasets folder: ::
 
-    mv creditcard.csv $PCNSIM_DIR/scripts/datasets
+    $ mv creditcard.csv $PCNSIM_DIR/scripts/datasets
 
 .. note:: If you are having problems installing PCNsim, you can contact our team. Our contact information is available at `the official PCNsim website <https://gta.ufrj.br/pcnsim>`_.

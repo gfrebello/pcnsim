@@ -36,14 +36,14 @@ Options:
 - `--gamma`: Parameter gamma used to generate a scale-free network topology. This parameter is only used if the `scale-free` topology is chosen to model the network. It's worth noting that `alpha + gamma = 1`. Gamma is a **float** type parameter.
     - *Default value:* `0.49999`
 - `--k`: Parameter k used to generate a scale-free network topology. This parameter is only used if the `watts-strogatz` topology is chosen to model the network. K is an **integer** type parameter.
-    - *Default value:* ``
+    - *Default value:* `2`
 
 ## Example Usage
  
  - Model channels following the real-world Lightning Network channel capacity. It's worth mentioning that this options **does not** model the network topology following the Lightning Network topology, only its channel parameters. The network topology follows a scale-free network model.
 
 ```
-python3 generate_topology_workload.py genTopo --lightning
+$ python3 generate_topology_workload.py genTopo --lightning
 
 Setting topology to scale-free
 Setting n to 10

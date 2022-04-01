@@ -3,7 +3,7 @@ Prerequisites
 
 Before using PCNsim simulator, you need the following programs installed. PCNsim is available for Linux OS and Windows.
 
-.. note:: Although PCNsim is available in Windows OS, this documentation follows the commands used in Linux. Some command might change depending on the operating system that you run.
+.. warning:: Although PCNsim is available in Windows OS, this documentation follows the commands used in Linux. Some command might change depending on the operating system that you run.
 
 Install Git
 ------------
@@ -14,7 +14,7 @@ Install Python
 PCNsim requires Python v3.8 to execute every module correctly. You can find every available Python version for download at the official `Python website <https://www.python.org/downloads/>`_.
 If you already have Python 3 installed, you can verify the python version you have by executing the following command: ::
 
-    python3 --version
+    $ python3 --version
 
 Install OMNET++
 ---------------

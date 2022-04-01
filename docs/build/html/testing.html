@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testing Your PCNsim &mdash; PCNsim  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Commands Reference" href="commands.html" />
+    <link rel="prev" title="Installing PCNsim" href="installing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html">
+            <img src="_static/pcnsim-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Commands Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PCNsim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="getting_started.html">Getting Started</a> &raquo;</li>
+      <li>Testing Your PCNsim</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/testing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="testing-your-pcnsim">
+<h1>Testing Your PCNsim<a class="headerlink" href="#testing-your-pcnsim" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>After downloading and installing the required components to run PCNsim, you can test your simulator by following this documentation. Our test simulation delivers the following scenario:</p>
+<ul class="simple">
+<li><p>ten nodes disposed in a scale-free network topology;</p></li>
+<li><p>one hundred transactions issued in the network. It’s worth mentioning that the transactions are only issued by the end-hosts to simulate the behavior of the Lightning Network accurately;</p></li>
+<li><p>the channel values follow real-world Lightning Network values;</p></li>
+<li><p>the transaction values follow credit-card transaction values collected from a dataset.</p></li>
+</ul>
+<section id="creating-network-topology-and-transaction-workload">
+<h2>Creating Network Topology and Transaction Workload<a class="headerlink" href="#creating-network-topology-and-transaction-workload" title="Permalink to this headline">¶</a></h2>
+<p>The first step in running the simulation is determining which network topology PCNsim will use to run the payment channel network. PCNsim offers scale-free and small-world topology by default given researches show that the Lightning Network behaves as both. It is possible to implement other network topologies by implementing them with NetworkX or by defining them in the topology file.
+To build the scenario described in this documentation, from the <cite>pcnsim</cite> root directory, go to the scripts directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">script</span>
+</pre></div>
+</div>
+<p>To generate the network topology described in this section of the documentation, run the <cite>genTopo</cite> command specifying <cite>10</cite> as the number of nodes and the channel modelling following the Lightning Network:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">generate_topology_workload</span><span class="o">.</span><span class="n">py</span> <span class="n">genTopo</span> <span class="o">-</span><span class="n">n</span> <span class="mi">10</span> <span class="o">--</span><span class="n">lightning</span>
+</pre></div>
+</div>
+<p>This command will generate a file in the <cite>topologies</cite> directory. This file will be used by OMNET++ to establish the connections among the nodes and channel parameters.
+After generating the topology, you’ll have to generate the transaction workload, which defines the characteristics of the transactions in the simulation. PCNsim offers transaction modelling following a real-world data from a credit-card company or an e-commerce sales dataset. You can also customize the workload by directly modifying the workload file.
+To generate the transaction workload of our scenario, run the <a href="#id1"><span class="problematic" id="id2">`</span></a>genWork`command specifying credit-card as the modelling reference and <a href="#id3"><span class="problematic" id="id4">`</span></a>100`as the number of transactions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">generate_topology_workload</span><span class="o">.</span><span class="n">py</span> <span class="n">genWork</span> <span class="o">--</span><span class="n">n_payments</span> <span class="mi">100</span> <span class="o">--</span><span class="n">credit</span><span class="o">-</span><span class="n">card</span>
+</pre></div>
+</div>
+<p>This command generates a file in the <cite>workloads</cite> directory.</p>
+</section>
+<section id="running-the-simulation">
+<h2>Running the Simulation<a class="headerlink" href="#running-the-simulation" title="Permalink to this headline">¶</a></h2>
+<p>After generating the topology and workload, you can run PCNsim by opening the project on OMNET++ and running the simulation.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installing.html" class="btn btn-neutral float-left" title="Installing PCNsim" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="commands.html" class="btn btn-neutral float-right" title="Commands Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Gabriel Rebello and Gustavo Camilo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

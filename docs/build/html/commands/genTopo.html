@@ -18,6 +18,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="genWork" href="genWork.html" />
     <link rel="prev" title="Commands Reference" href="../commands.html" /> 
 </head>
 
@@ -47,6 +48,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#example-usage">Example Usage</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="genWork.html">genWork</a></li>
 </ul>
 </li>
 </ul>
@@ -135,7 +137,7 @@
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--k</span></code>: Parameter k used to generate a scale-free network topology. This parameter is only used if the <code class="docutils literal notranslate"><span class="pre">watts-strogatz</span></code> topology is chosen to model the network. K is an <strong>integer</strong> type parameter.</p>
 <ul>
-<li><p><em>Default value:</em> ``</p></li>
+<li><p><em>Default value:</em> <code class="docutils literal notranslate"><span class="pre">2</span></code></p></li>
 </ul>
 </li>
 </ul>
@@ -145,13 +147,13 @@
 <ul class="simple">
 <li><p>Model channels following the real-world Lightning Network channel capacity. It’s worth mentioning that this options <strong>does not</strong> model the network topology following the Lightning Network topology, only its channel parameters. The network topology follows a scale-free network model.</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">generate_topology_workload</span><span class="o">.</span><span class="n">py</span> <span class="n">genTopo</span> <span class="o">--</span><span class="n">lightning</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 generate_topology_workload.py genTopo --lightning
 
-<span class="n">Setting</span> <span class="n">topology</span> <span class="n">to</span> <span class="n">scale</span><span class="o">-</span><span class="n">free</span>
-<span class="n">Setting</span> <span class="n">n</span> <span class="n">to</span> <span class="mi">10</span>
-<span class="n">Setting</span> <span class="n">alpha</span> <span class="n">to</span> <span class="mf">0.5</span>
-<span class="n">Setting</span> <span class="n">beta</span> <span class="n">to</span> <span class="mf">1e-05</span>
-<span class="n">Setting</span> <span class="n">gamma</span> <span class="n">to</span> <span class="mf">0.49999</span>
+Setting topology to scale-free
+Setting n to 10
+Setting alpha to 0.5
+Setting beta to 1e-05
+Setting gamma to 0.49999
 </pre></div>
 </div>
 </section>
@@ -162,6 +164,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../commands.html" class="btn btn-neutral float-left" title="Commands Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="genWork.html" class="btn btn-neutral float-right" title="genWork" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
