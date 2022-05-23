@@ -1,2 +1,5 @@
 networkx
 click
+pandas
+scipy
+matplotlib
