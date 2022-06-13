@@ -20,7 +20,9 @@ cplusplus {{
     typedef std::vector<HTLC *> HTLCVector;
 }};
 
-class noncobject HTLCVector;
+class HTLCVector {
+    @existingClass;
+}
 
 packet commitmentSigned {
     HTLCVector HTLCs;

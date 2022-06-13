@@ -13,14 +13,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-cplusplus {{
-    #include <vector>
-    #include "HTLC.h"
-    
-    typedef std::vector<HTLC *> HTLCVector;
-}};
 
-class noncobject HTLCVector;
+// Since they share the same structure, we just import the definitions on commitSigned into revokeAndAck to avoid class redefinitions.
+import commitmentSigned; 
 
 packet revokeAndAck {
     HTLCVector HTLCs;

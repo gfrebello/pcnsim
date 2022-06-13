@@ -1,5 +1,5 @@
 #
-# OMNeT++/OMNEST Makefile for simulator
+# OMNeT++/OMNEST Makefile for wpcn-omnet
 #
 # This file was generated with the command:
 #  opp_makemake -f --deep -O out -I. -lcrypto -ljsoncpp
@@ -7,16 +7,15 @@
 
 # Name of target to be created (-o option)
 TARGET_DIR = .
-TARGET_NAME = simulator$(D)
+TARGET_NAME = wpcn-omnet$(D)
 TARGET = $(TARGET_NAME)$(EXE_SUFFIX)
 TARGET_IMPLIB = $(TARGET_NAME)$(IMPLIB_SUFFIX)
 TARGET_IMPDEF = $(TARGET_NAME)$(IMPDEF_SUFFIX)
 TARGET_FILES = $(TARGET_DIR)/$(TARGET)
 
 # User interface (uncomment one) (-u option)
-USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(QTENV_LIBS) $(CMDENV_LIBS)
+USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(QTENV_LIBS) $(CMDENV_LIBS)
 #USERIF_LIBS = $(CMDENV_LIBS)
-#USERIF_LIBS = $(TKENV_LIBS)
 #USERIF_LIBS = $(QTENV_LIBS)
 
 # C++ include paths (with -I)
@@ -45,8 +44,6 @@ OBJS = \
     $O/payment_m.o \
     $O/paymentRefused_m.o \
     $O/revokeAndAck_m.o \
-    $O/routeReply_m.o \
-    $O/routeReq_m.o \
     $O/updateAddHTLC_m.o \
     $O/updateFailHTLC_m.o \
     $O/updateFulfillHTLC_m.o
@@ -59,8 +56,6 @@ MSGFILES = \
     payment.msg \
     paymentRefused.msg \
     revokeAndAck.msg \
-    routeReply.msg \
-    routeReq.msg \
     updateAddHTLC.msg \
     updateFailHTLC.msg \
     updateFulfillHTLC.msg
@@ -114,6 +109,8 @@ $(TARGET_DIR)/% :: $O/%
 	$(Q)$(LN) $< $@
 ifeq ($(TOOLCHAIN_NAME),clang-msabi)
 	-$(Q)-$(LN) $(<:%.dll=%.lib) $(@:%.dll=%.lib) 2>/dev/null
+
+$O/$(TARGET_NAME).pdb: $O/$(TARGET)
 endif
 
 $O/$(TARGET): $(OBJS)  $(wildcard $(EXTRA_OBJS)) Makefile $(CONFIGFILE)

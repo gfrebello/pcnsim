@@ -9,7 +9,9 @@ cplusplus{{
 	typedef std::vector<std::string> stringVector;
 }};
 
-class noncobject stringVector;
+class stringVector {
+    @existingClass;
+}
 
 packet BaseMessage {
     string destination;
