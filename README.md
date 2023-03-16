@@ -1,7 +1,7 @@
 # PCNsim: Payment Channel Network Simulator 
 [![Documentation Status](https://readthedocs.org/projects/pcnsim/badge/?version=latest)](https://pcnsim.readthedocs.io/en/latest/?badge=latest)
 
-This project presents PCNsim, an open-source, modular, and lightweight payment channel network. For more information, you can visit [our website](https://www.gta.ufrj.br/pcnsim) or the [official PCNsim documentation](https://pcnsim.readthedocs.io). PCNsim is designed to support multiple routing algorithms, topologies, and transactions workloads to meet the requirements of PCN researchers. 
+This project presents PCNsim, an open-source, modular, and lightweight payment channel network simulator. For more information, you can visit [our website](https://www.gta.ufrj.br/pcnsim) or the [official PCNsim documentation](https://pcnsim.readthedocs.io). PCNsim is designed to support multiple routing algorithms, topologies, and transactions workloads to meet the requirements of PCN researchers. 
 
 PCNsim presents a unique simulator that accuratly mimics the behavior of the Lightning Network, such as message formats and message exchange.
 
